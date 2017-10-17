@@ -32,7 +32,7 @@ public abstract class Instruction
   static final int SIZEOF_DOUBLE_WORD_REG_ENCODING  = 3;
   
   // Bitshift Definitions
-  static final int SHIFT_OPCODE     = SIZEOF_INSTRUCTION - SIZEOF_OPCODE - 1;
+  static final int SHIFT_OPCODE     = SIZEOF_INSTRUCTION - SIZEOF_OPCODE;
   static final int SHIFT_SIZE_FLAG  = SHIFT_OPCODE - SIZEOF_SIZE_FLAG;
   static final int SHIFT_TYPE_FLAG  = SHIFT_SIZE_FLAG - SIZEOF_TYPE_FLAG;
   
@@ -106,9 +106,9 @@ public abstract class Instruction
     assert arguments != null : "Instruction defined with no labelMapping. Cannot get machine code.";
     int index;
     
-    this.machineCode &= dataWidth.flag << SHIFT_SIZE_FLAG;
+    this.machineCode |= dataWidth.flag << SHIFT_SIZE_FLAG;
     
-    this.machineCode &= instructionType.flag << SHIFT_TYPE_FLAG;
+    this.machineCode |= instructionType.flag << SHIFT_TYPE_FLAG;
     
     int shiftDistance = SHIFT_TYPE_FLAG;
     
@@ -118,7 +118,7 @@ public abstract class Instruction
       assert arguments[index].getArgumentType() == DataType.REGISTER : "Expected register argument";
       
       shiftDistance -= arguments[index].getEncodingSize();
-      this.machineCode &= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
+      this.machineCode |= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
     }
     
     switch(arguments[index].argumentType)
@@ -126,7 +126,7 @@ public abstract class Instruction
     case REGISTER:
       // Shift in the register, as normal
       shiftDistance -= arguments[index].getEncodingSize();
-      this.machineCode &= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
+      this.machineCode |= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
       break;
     case IMMEDIATE:
       // TODO: Handle encoding immediate value
@@ -144,8 +144,8 @@ public abstract class Instruction
 
     for (int index = 0; index < toReturn.length; index++)
     {
-      toReturn[index] = (byte) (input & mask);
-      mask = mask >> 8;
+      toReturn[index] = (byte) ((input & mask) >> (8 * (toReturn.length - 1 - index)));
+      mask = mask >>> 8;
     }
 
     return toReturn;
@@ -287,6 +287,9 @@ public abstract class Instruction
       if (argumentType == DataType.IMMEDIATE)
       {
         machineCodeRepresentation = this.parseImmediate(argument);
+      } else if (argumentType == DataType.REGISTER)
+      {
+        machineCodeRepresentation = this.parseRegister(argument, dataWidth);
         switch(dataWidth)
         {
         case SINGLE_WORD:
@@ -296,9 +299,6 @@ public abstract class Instruction
           size = SIZEOF_DOUBLE_WORD_REG_ENCODING;
           break;
         }
-      } else if (argumentType == DataType.REGISTER)
-      {
-        machineCodeRepresentation = this.parseRegister(argument, dataWidth);
       } else
       {
         throw new RuntimeException("Undefined Instruction Data Type");
@@ -333,6 +333,10 @@ public abstract class Instruction
         {
         case "ret1":
           return new Byte[] { 0x0 };
+        case "ret2":
+          return new Byte[] { 0x1 };
+        case "arg1":
+          return new Byte[] { 0x2 };
         default:
           throw new InvalidRegisterException(argument);
         }

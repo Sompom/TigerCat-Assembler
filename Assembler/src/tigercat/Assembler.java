@@ -7,6 +7,7 @@
 
 package tigercat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Assembler
@@ -26,10 +27,10 @@ public class Assembler
    * @param assembly Assembly code to assemble
    * @return A machine-code representation of the passed assembly
    */
-  public String assemble(String assembly)
+  public Byte[] assemble(String assembly)
   {
     HashMap<String, Label> labelMapping = firstPass(assembly);
-    String machineCode = secondPass(assembly, labelMapping);
+    Byte[] machineCode = secondPass(assembly, labelMapping);
     return machineCode;
   }
   
@@ -57,9 +58,9 @@ public class Assembler
     return labelMapping;
   }
   
-  protected String secondPass(String assembly, HashMap<String, Label> labelMapping)
+  protected Byte[] secondPass(String assembly, HashMap<String, Label> labelMapping)
   {
-    StringBuilder machineCode = new StringBuilder();
+    ArrayList<Byte> machineCode = new ArrayList<Byte>();
     
     //  For each line in the assembly body:
     //    Determine if the line is a label or an instruction
@@ -70,7 +71,7 @@ public class Assembler
     //      Ignore labels
     //  Write all data-type label's bodies to the end of the output
     
-    return machineCode.toString();
+    return machineCode.toArray(null);
   }
   
 }

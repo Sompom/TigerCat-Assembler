@@ -69,8 +69,8 @@ public class AddInstruction extends Instruction
       throw new InstructionSyntaxError("Undefined prefix on " + rhs);
     }
 
-    arguments[0] = new Argument(dest, this.dataWidth, this.instructionType);
-    arguments[1] = new Argument(lhs, this.dataWidth, this.instructionType);
-    arguments[2] = new Argument(rhs, this.dataWidth, this.instructionType);
+    arguments[0] = new Argument(dest.substring(1), this.dataWidth, this.instructionType);
+    arguments[1] = new Argument(lhs.substring(1), this.dataWidth, this.instructionType);
+    arguments[2] = new Argument(rhs.substring(1), this.dataWidth, this.instructionType);
   }
 }

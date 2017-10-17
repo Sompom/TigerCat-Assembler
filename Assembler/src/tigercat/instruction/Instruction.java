@@ -168,12 +168,27 @@ public abstract class Instruction
    * @param line
    *          Line of assembly which corresponds to a machine instruction
    * @return The newly-created instruction
+   * @throws InvalidRegisterException 
+   * @throws InstructionSyntaxError 
+   * @throws InvalidOpcodeException 
+   * @throws InstructionArgumentCountException 
    */
   public static Instruction createInstruction(String line, HashMap<String, Label> labelMapping)
+      throws InstructionArgumentCountException,
+      InvalidOpcodeException,
+      InstructionSyntaxError,
+      InvalidRegisterException
   {
-    // Switch statement on the first token of the line to create a new
-    // instruction
-    return null;
+    String[] tokens = line.split("\\s+");
+    String opcode = tokens[0];
+    
+    if (opcode.startsWith("add"))
+    {
+      return new AddInstruction(tokens, labelMapping);
+    }
+    else {
+      throw new InvalidOpcodeException("Unable to create instruction from " + line);
+    }
   }
   
   /**

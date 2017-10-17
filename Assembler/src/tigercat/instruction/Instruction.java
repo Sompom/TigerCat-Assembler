@@ -7,12 +7,21 @@
 
 package tigercat.instruction;
 
+import java.util.HashMap;
+
+import tigercat.Label;
+
 /**
  * Helper class for converting assembly string lines to machine code
  *
  */
 public abstract class Instruction
 {
+  
+  /**
+   * Every instruction is four bytes (32-bits, two words)
+   */
+  static final int BYTES_PER_INSTRUCTION = 4;
 
   /**
    * Record whether an instruction operates on single-word or double-word data
@@ -56,17 +65,25 @@ public abstract class Instruction
 
   protected DataWidth dataWidth;
   protected DataType instructionType;
+  protected Argument[] arguments;
+  
+  protected Byte[] machineCode;
 
   /**
    * Return the machine code representation of this instruction
    * 
    * @return Machine code representation of this instruction
    */
-  public abstract Byte[] getMachineCode();
+  public Byte[] getMachineCode()
+  {
+    assert machineCode != null : "Instruction defined with no labelMapping. Cannot get machine code.";
+    
+    return machineCode;
+  }
 
   /**
-   * Return the size, in words, of this instruction Currently all instructions
-   * are two words (32-bits), but you never know...
+   * Return the size, in words, of this instruction Currently all individual instructions
+   * are two words (32-bits), but pseudo instructions may be longer
    * 
    * @return The size of this instruction in machine words
    */
@@ -82,11 +99,23 @@ public abstract class Instruction
    *          Line of assembly which corresponds to a machine instruction
    * @return The newly-created instruction
    */
-  public static Instruction createInstruction(String line)
+  public static Instruction createInstruction(String line, HashMap<String, Label> labelMapping)
   {
     // Switch statement on the first token of the line to create a new
     // instruction
     return null;
+  }
+  
+  /**
+   * Create an Instruction from the given string
+   * 
+   * An Instruction may be created with null labelMapping, in which case only getSize() is defined
+   * 
+   * @param line The instruction to create
+   * @param labelMapping Resolve labels to addresses
+   */
+  protected Instruction(String line, HashMap<String, Label> labelMapping)
+  {
   }
 
   protected class Argument

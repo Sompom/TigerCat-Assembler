@@ -187,7 +187,7 @@ public abstract class Instruction
    * @param line The instruction to create
    * @param labelMapping Resolve labels to addresses
    */
-  protected Instruction(String line, HashMap<String, Label> labelMapping)
+  protected Instruction(String[] tokens, HashMap<String, Label> labelMapping)
   {
   }
   

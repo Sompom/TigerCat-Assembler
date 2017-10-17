@@ -8,13 +8,13 @@ public class AddInstruction extends Instruction
 {
   public static byte ADD_OPCODE = 0x00;
   
-  protected AddInstruction(String line, HashMap<String, Label> labelMapping)
+  protected AddInstruction(String[] tokens, HashMap<String, Label> labelMapping)
       throws InstructionArgumentCountException,
       InvalidOpcodeException,
       InstructionSyntaxError,
       InvalidRegisterException
   {
-    super(line, labelMapping);
+    super(tokens, labelMapping);
     if (labelMapping == null)
     {
       this.arguments = null;
@@ -23,7 +23,6 @@ public class AddInstruction extends Instruction
 
     this.arguments = new Argument[THREE_ARGUMENTS];
     this.machineCode = 0;
-    String[] tokens = line.split("\\s+");
     
     checkInstructionSyntax(tokens, THREE_ARGUMENTS, "add".length());
     

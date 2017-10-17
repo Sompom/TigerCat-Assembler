@@ -45,6 +45,7 @@ public class Assembler
     Integer offsetAddress = MACHINE_CODE_START; // Offset from the first instruction
     
     //  For each line in the assembly body:
+    //    Ignore lines which start with a comment. Strip comments from end-of-lines
     //    Determine if the line is a label or an instruction
     //      For instructions, add their size to the address counter
     //      For labels:
@@ -63,6 +64,7 @@ public class Assembler
     ArrayList<Byte> machineCode = new ArrayList<Byte>();
     
     //  For each line in the assembly body:
+    //    Ignore lines which start with a comment. Strip comments from end-of-lines
     //    Determine if the line is a label or an instruction
     //      Assemble an instruction (to its 32-bit machine-code representation)
     //        Replace labels with addresses as encountered

@@ -10,6 +10,7 @@ package tigercat.instruction;
 import java.util.HashMap;
 
 import tigercat.Label;
+import tigercat.instruction.Instruction.DataWidth;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -87,6 +88,7 @@ public abstract class Instruction
     }
   }
 
+  protected int opcode_encoding;
   protected DataWidth dataWidth;
   protected DataType instructionType;
   protected Argument[] arguments;
@@ -105,6 +107,8 @@ public abstract class Instruction
   {
     assert arguments != null : "Instruction defined with no labelMapping. Cannot get machine code.";
     int index;
+
+    this.machineCode |= opcode_encoding << SHIFT_OPCODE;
     
     this.machineCode |= dataWidth.flag << SHIFT_SIZE_FLAG;
     
@@ -172,19 +176,21 @@ public abstract class Instruction
    * @throws InstructionSyntaxError 
    * @throws InvalidOpcodeException 
    * @throws InstructionArgumentCountException 
+   * @throws InvalidDataWidthException 
    */
   public static Instruction createInstruction(String line, HashMap<String, Label> labelMapping)
       throws InstructionArgumentCountException,
       InvalidOpcodeException,
       InstructionSyntaxError,
-      InvalidRegisterException
+      InvalidRegisterException,
+      InvalidDataWidthException
   {
     String[] tokens = line.split("\\s+");
     String opcode = tokens[0];
     
     if (opcode.startsWith("add"))
     {
-      return new AddInstruction(tokens, labelMapping);
+      return new ThreeArgumentInstruction(tokens, labelMapping, 0x00);
     }
     else {
       throw new InvalidOpcodeException("Unable to create instruction from " + line);
@@ -201,29 +207,33 @@ public abstract class Instruction
    * 
    * @param line The instruction to create
    * @param labelMapping Resolve labels to addresses
+   * @throws InvalidDataWidthException If the instruction specifies an unrecognized data width
    */
   protected Instruction(String[] tokens, HashMap<String, Label> labelMapping)
+      throws InvalidDataWidthException
   {
+    this.machineCode = 0;
+    String opcode = tokens[0];
+
+    // Add the data-width flag to the machine code
+    if (opcode.endsWith("w"))
+    {
+      this.dataWidth = DataWidth.SINGLE_WORD;
+    } else if (opcode.endsWith("d"))
+    {
+      this.dataWidth = DataWidth.DOUBLE_WORD;
+    } else
+    {
+      throw new InvalidDataWidthException(opcode);
+    }
   }
   
-  protected static void checkInstructionSyntax(String[] tokens, int numArguments, int opcodeLength)
+  protected static void checkInstructionSyntax(String[] tokens, int numArguments)
       throws InstructionArgumentCountException, 
       InvalidOpcodeException,
       InstructionSyntaxError
-  { 
-    // Check that we have the proper number of arguments (and the opcode)
-    if (tokens.length != numArguments + 1)
-    {
-      throw new InstructionArgumentCountException();
-    }
-    
+  {
     String opcode = tokens[0];
-    
-    // All instructions take a size suffix
-    if (opcode.length() != opcodeLength + 1)
-    {
-      throw new InvalidOpcodeException(opcode);
-    }
     
     // Check that the remaining arguments are either:
     //   A register

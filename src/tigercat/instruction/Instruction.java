@@ -33,6 +33,9 @@ public abstract class Instruction
   static final int SIZEOF_TYPE_FLAG                 = 1;
   static final int SIZEOF_SINGLE_WORD_REG_ENCODING  = 4;
   static final int SIZEOF_DOUBLE_WORD_REG_ENCODING  = 3;
+
+  static final int SIZEOF_WORD                      = 16;
+  static final int SIZEOF_BYTE                      = 8;
   
   // Bitshift Definitions
   static final int SHIFT_OPCODE     = SIZEOF_INSTRUCTION - SIZEOF_OPCODE;
@@ -197,6 +200,10 @@ public abstract class Instruction
     if (opcode.startsWith("sub"))
     {
       return new SubInstruction(tokens, labelMapping);
+    }
+    if (opcode.startsWith("mov"))
+    {
+      return new MoveInstruction(tokens, labelMapping);
     }
 
     throw new InvalidOpcodeException("Unable to create instruction from " + line);
@@ -377,8 +384,14 @@ public abstract class Instruction
       {
         switch (argument)
         {
+        case Argument.ZERO_REG:
+          return new Byte[] { 0x7 };
         case "r1l":
           return new Byte[] { 0x0 };
+        case "r2l":
+          return new Byte[] { 0x1 };
+        case "a1l":
+          return new Byte[] { 0x2 };
         default:
           throw new InvalidRegisterException(argument);
         }

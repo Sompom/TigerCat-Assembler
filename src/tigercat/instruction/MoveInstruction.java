@@ -6,7 +6,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tigercat.Assembler;
 import tigercat.Label;
 
-public class MoveInstruction extends TwoArgumentInstruction
+public class MoveInstruction extends Instruction
 {
   Instruction[] childInstructions;
   
@@ -51,7 +51,7 @@ public class MoveInstruction extends TwoArgumentInstruction
       InvalidOpcodeException, InvalidRegisterException
   {
     // TODO: Top-level pseudo-instruction (dummy) constructor
-    super(tokens, labelMapping, 0x00);
+    super(tokens, labelMapping, 0x00, TWO_ARGUMENTS);
     
     if (this.dataWidth == DataWidth.SINGLE_WORD)
     {

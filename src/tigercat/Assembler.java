@@ -9,6 +9,15 @@ package tigercat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import tigercat.instruction.Instruction;
+import tigercat.instruction.InstructionArgumentCountException;
+import tigercat.instruction.InstructionSyntaxError;
+import tigercat.instruction.InvalidDataWidthException;
+import tigercat.instruction.InvalidOpcodeException;
+import tigercat.instruction.InvalidRegisterException;
 
 public class Assembler
 {
@@ -16,6 +25,11 @@ public class Assembler
    * Memory address where the CPU will look for the first instruction
    */
   public static final int MACHINE_CODE_START = 0x0; // Machine code starts at the top of memory
+
+  /**
+   * Comments start with this symbol
+   */
+  static final String COMMENT_PREFIX = "#";
   
   public Assembler()
   {
@@ -26,8 +40,13 @@ public class Assembler
    * Convert the passed TigerCat assembly code to machine code
    * @param assembly Assembly code to assemble
    * @return A machine-code representation of the passed assembly
+   * @throws InvalidDataWidthException 
+   * @throws InvalidRegisterException 
+   * @throws InstructionSyntaxError 
+   * @throws InvalidOpcodeException 
+   * @throws InstructionArgumentCountException 
    */
-  public byte[] assemble(String assembly)
+  public byte[] assemble(String assembly) throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
     HashMap<String, Label> labelMapping = firstPass(assembly);
     Byte[] machineCode = secondPass(assembly, labelMapping);
@@ -46,14 +65,19 @@ public class Assembler
    * Collect a mapping of label names (strings) to address (integers)
    * @param assembly Assembly lines to parse
    * @return Mapping of strings to addresses
+   * @throws InvalidDataWidthException 
+   * @throws InvalidRegisterException 
+   * @throws InstructionSyntaxError 
+   * @throws InvalidOpcodeException 
+   * @throws InstructionArgumentCountException 
    */
-  protected HashMap<String, Label> firstPass(String assembly)
+  protected HashMap<String, Label> firstPass(String assembly) throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
     HashMap<String, Label> labelMapping = new HashMap<String, Label>();
     Integer offsetAddress = MACHINE_CODE_START; // Offset from the first instruction
     
     //  For each line in the assembly body:
-    //    Ignore lines which start with a comment. Strip comments from end-of-lines
+    //    Ignore lines which start with a comment.
     //    Determine if the line is a label or an instruction
     //      For instructions, add their size to the address counter
     //      For labels:
@@ -63,6 +87,64 @@ public class Assembler
     //    Ignore address-type labels
     //    Store address to data-type labels by using the offset at the end of the machine code
     //      and incrementing it by the size of each label encountered
+    
+    String[] lines = assembly.split(System.getProperty("line.separator"));
+    for (int lineIndex = 0; lineIndex < lines.length; lineIndex++)
+    {
+      String line = lines[lineIndex];
+      
+      // Ignore blank lines
+      if (line.matches("^\\s*$"))
+      {
+        continue;
+      }
+      
+      // Ignore comment lines
+      if (line.matches("^\\s*" + COMMENT_PREFIX))
+      {
+        continue;
+      }
+      
+      // Determine whether the line starts with a label
+      // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
+      if (line.matches("^\\s*[A-Z]*:"))
+      {
+        String labelName = line.trim();
+        // Remove colon
+        labelName = labelName.substring(0, labelName.length() - 1);
+        
+        // For simplicity, this assembler requires labels be on their own line
+        if (!(line.matches("^\\s*[A-Z]*:\\s$")))
+        {
+          throw new InstructionSyntaxError("Labels must be on their own line");
+        }
+        String nextLine;
+        if (lineIndex < lines.length - 1)
+        {
+          // This label is at the end of the assembly file. Why?
+          // Implement this when a sensible solution has been found, otherwise
+          // don't write assembly which does this!
+          throw new NotImplementedException();
+        }
+        nextLine = lines[lineIndex + 1];
+        // We need to peek the next line to check for a data declaration
+        if (nextLine.matches("^\\s*\\.data"))
+        {
+          // TODO: Store data label
+          throw new NotImplementedException();
+        } else
+        {
+          // If not a data label, this is an address label
+          Label toStore = new Label(labelName, offsetAddress);
+          labelMapping.put(labelName, toStore);
+        }
+        continue;
+      }
+      
+      // If none of the other patterns, line is either an assembly code or invalid
+      // If it is invalid, trying to create an instruction will throw a useful exception
+      offsetAddress = Instruction.createInstruction(line, null).getSize();
+    }
     
     return labelMapping;
   }

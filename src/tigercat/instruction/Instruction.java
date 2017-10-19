@@ -188,13 +188,24 @@ public abstract class Instruction
     String[] tokens = line.split("\\s+");
     String opcode = tokens[0];
     
+    if (opcode.startsWith("addc"))
+    {
+      return new ThreeArgumentInstruction(tokens, labelMapping, 0x01);
+    }
     if (opcode.startsWith("add"))
     {
       return new ThreeArgumentInstruction(tokens, labelMapping, 0x00);
     }
-    else {
-      throw new InvalidOpcodeException("Unable to create instruction from " + line);
+    if (opcode.startsWith("subc"))
+    {
+      return new ThreeArgumentInstruction(tokens, labelMapping, 0x03);
     }
+    if (opcode.startsWith("sub"))
+    {
+      return new ThreeArgumentInstruction(tokens, labelMapping, 0x02);
+    }
+
+    throw new InvalidOpcodeException("Unable to create instruction from " + line);
   }
   
   /**

@@ -27,11 +27,19 @@ public class Assembler
    * @param assembly Assembly code to assemble
    * @return A machine-code representation of the passed assembly
    */
-  public Byte[] assemble(String assembly)
+  public byte[] assemble(String assembly)
   {
     HashMap<String, Label> labelMapping = firstPass(assembly);
     Byte[] machineCode = secondPass(assembly, labelMapping);
-    return machineCode;
+    
+    // Convert Byte[] to byte[]
+    byte[] toReturn = new byte[machineCode.length];
+    for (int index = 0; index < machineCode.length; index ++)
+    {
+      toReturn[index] = machineCode[index];
+    }
+    
+    return toReturn;
   }
   
   /**

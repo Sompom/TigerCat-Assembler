@@ -56,7 +56,8 @@ public class MoveInstruction extends Instruction
     if (this.dataWidth == DataWidth.SINGLE_WORD)
     {
       childInstructions = new Instruction[1];
-      String child = "addw " + Instruction.REGISTER_PREFIX + Argument.ZERO_REG + " " + tokens[1] + " " + tokens[2]; 
+      // Construct the pseudo instruction by adding the mov argument to zero and storing into the mov destination 
+      String child = "addw " + tokens[1] + " " + Instruction.REGISTER_PREFIX + Argument.ZERO_REG + " " + tokens[2]; 
       childInstructions[0] = Instruction.createInstruction(child, labelMapping);
     }
     else if (this.dataWidth == DataWidth.DOUBLE_WORD)

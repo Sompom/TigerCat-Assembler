@@ -99,8 +99,8 @@ public class TigerCatInstructionTester
   @Test
   public void testGetMOVWMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
-    Instruction toCheck = Instruction.createInstruction("movw %a1l %r1l", new HashMap<String, Label>());
-    Assert.assertArrayEquals(Instruction.createInstruction("addw %zero %a1l %r1l", new HashMap<String, Label>()).getMachineCode(), toCheck.getMachineCode());
+    Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", new HashMap<String, Label>());
+    Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", new HashMap<String, Label>()).getMachineCode(), toCheck.getMachineCode());
   }
 
 }

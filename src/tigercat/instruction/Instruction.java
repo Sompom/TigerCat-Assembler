@@ -10,6 +10,8 @@ package tigercat.instruction;
 import java.util.HashMap;
 
 import tigercat.Label;
+import tigercat.instruction.Instruction.Argument;
+import tigercat.instruction.Instruction.DataType;
 import tigercat.instruction.Instruction.DataWidth;
 
 /**
@@ -211,12 +213,26 @@ public abstract class Instruction
    * @param line The instruction to create
    * @param labelMapping Resolve labels to addresses
    * @throws InvalidDataWidthException If the instruction specifies an unrecognized data width
+   * @throws InstructionSyntaxError 
+   * @throws InstructionArgumentCountException 
+   * @throws InvalidOpcodeException 
+   * @throws InvalidRegisterException 
    */
-  protected Instruction(String[] tokens, HashMap<String, Label> labelMapping)
-      throws InvalidDataWidthException
+  protected Instruction(String[] tokens, HashMap<String, Label> labelMapping, int opcode_encoding, int num_args)
+      throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException, InvalidOpcodeException, InvalidRegisterException
   {
     this.machineCode = 0;
+    this.arguments = new Argument[num_args];
+    
+    if (tokens.length < num_args + 1)
+    {
+      throw new InstructionArgumentCountException();
+    }
+    
+    checkInstructionSyntax(tokens, num_args);
+
     String opcode = tokens[0];
+    String last_arg = tokens[num_args - 1];
 
     // Add the data-width flag to the machine code
     if (opcode.endsWith("w"))
@@ -229,6 +245,29 @@ public abstract class Instruction
     {
       throw new InvalidDataWidthException(opcode);
     }
+    
+    this.opcode_encoding = opcode_encoding;
+
+    // Decide whether we are using immediate data or not
+    // The only argument which can validly be immediate is the last one,
+    // and the syntax check has already said the instruction is valid
+    if (last_arg.startsWith(IMMEDIATE_PREFIX))
+    {
+      this.instructionType = DataType.IMMEDIATE;
+    } else if (last_arg.startsWith(REGISTER_PREFIX))
+    {
+      this.instructionType = DataType.REGISTER;
+    } else
+    {
+      // TODO: Handle label lookup
+      throw new InstructionSyntaxError("Undefined prefix on " + last_arg);
+    }
+    
+    for (int index = 0; index < num_args; index++)
+    {
+      arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, this.instructionType);
+    }
+
   }
   
   protected static void checkInstructionSyntax(String[] tokens, int numArguments)
@@ -269,6 +308,8 @@ public abstract class Instruction
 
   protected class Argument
   {
+    protected static final String ZERO_REG = "zero";
+    
     protected Byte[] machineCodeRepresentation;
     protected DataType argumentType;
     protected int size;
@@ -296,6 +337,7 @@ public abstract class Instruction
 
     public Argument(String argument, DataWidth dataWidth, DataType argumentType) throws InvalidRegisterException
     {
+      
       this.argumentType = argumentType;
       if (argumentType == DataType.IMMEDIATE)
       {

@@ -1,13 +1,13 @@
 TODO list, in rough priority order
 
 0. Any TODO tags or stubbed methods in the code
-1. Move more code (Ex., this.dataWidth selection) from AddInstruction to the top-level Instruction constructor. The more we move into the upper levels, the less we have to duplicate for each Instruction instance
-2. New abstract subclasses of Instruction:
-  1. ThreeArgumentInstruction
-  2. TwoArgumentInstruction
-  3. OneArgumentInstruction
-  4. ZeroArgumentInstruction
-3. Move basically all the code fomr AddInstruction to the new ThreeArgumentInstruction. Have AddInstruction extend ThreeArgumentInstruction
-4. Maybe add a new non-public constructor to Instruction which accepts an Opcode and shifts it into place, and is called by the non-abstract subclasses
-5. More tests
-6. More Instructions
+1. New abstract subclasses of Instruction:
+  2. OneArgumentInstruction
+  3. ZeroArgumentInstruction
+2. More tests
+3. Assembler first and second pass functions
+4. Top-level main function (main.java?) which:
+  - Reads some text file passed on command line
+  - Uses Assembler
+  - Write to binary file passed on command line
+5. More Instructions

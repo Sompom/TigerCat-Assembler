@@ -8,8 +8,12 @@
 package tigercat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Scanner;
+
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tigercat.instruction.Instruction;
@@ -31,6 +35,11 @@ public class Assembler
    */
   static final String COMMENT_PREFIX = "#";
   
+  /**
+   * Labels end with a colon
+   */
+  static final String LABEL_SUFFIX = ":";
+  
   public Assembler()
   {
     // For testability, the assembler should have no class-level data
@@ -40,25 +49,23 @@ public class Assembler
    * Convert the passed TigerCat assembly code to machine code
    * @param assembly Assembly code to assemble
    * @return A machine-code representation of the passed assembly
-   * @throws InvalidDataWidthException 
-   * @throws InvalidRegisterException 
-   * @throws InstructionSyntaxError 
-   * @throws InvalidOpcodeException 
-   * @throws InstructionArgumentCountException 
    */
-  public byte[] assemble(String assembly) throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  public byte[] assemble(String assembly)
   {
-    HashMap<String, Label> labelMapping = firstPass(assembly);
-    Byte[] machineCode = secondPass(assembly, labelMapping);
-    
-    // Convert Byte[] to byte[]
-    byte[] toReturn = new byte[machineCode.length];
-    for (int index = 0; index < machineCode.length; index ++)
+    byte[] machineCode = null;
+    try
     {
-      toReturn[index] = machineCode[index];
+      HashMap<String, Label> labelMapping = firstPass(assembly);
+      machineCode = secondPass(assembly, labelMapping);
+    } catch (InstructionArgumentCountException | InvalidOpcodeException | InstructionSyntaxError
+        | InvalidRegisterException | InvalidDataWidthException | UndefinedLabelException e)
+    {
+      // TODO: Split catch per-exception and print useful error messages
+      e.printStackTrace();
+      System.exit(1);
     }
     
-    return toReturn;
+    return machineCode;
   }
   
   /**
@@ -107,14 +114,14 @@ public class Assembler
       
       // Determine whether the line starts with a label
       // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-      if (line.matches("^\\s*[A-Z]*:"))
+      if (line.matches("^\\s*[A-Z]+" + LABEL_SUFFIX))
       {
         String labelName = line.trim();
         // Remove colon
         labelName = labelName.substring(0, labelName.length() - 1);
         
         // For simplicity, this assembler requires labels be on their own line
-        if (!(line.matches("^\\s*[A-Z]*:\\s$")))
+        if (!(line.matches("^\\s*[A-Z]+:\\s$")))
         {
           throw new InstructionSyntaxError("Labels must be on their own line");
         }
@@ -149,7 +156,7 @@ public class Assembler
     return labelMapping;
   }
   
-  protected Byte[] secondPass(String assembly, HashMap<String, Label> labelMapping)
+  protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping) throws UndefinedLabelException, InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
     ArrayList<Byte> machineCode = new ArrayList<Byte>();
     
@@ -163,7 +170,78 @@ public class Assembler
     //      Ignore labels
     //  Write all data-type label's bodies to the end of the output
     
-    return machineCode.toArray(null);
+    String[] lines = assembly.split(System.getProperty("line.separator"));
+    for (int lineIndex = 0; lineIndex < lines.length; lineIndex++)
+    {
+      String line = lines[lineIndex];
+      
+      // Ignore blank lines
+      if (line.matches("^\\s*$"))
+      {
+        continue;
+      }
+      
+      // Ignore comment lines
+      if (line.matches("^\\s*" + COMMENT_PREFIX))
+      {
+        continue;
+      }
+      
+      // Ignore lines which start with a label
+      // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
+      if (line.matches("^\\s*[A-Z]+" + LABEL_SUFFIX))
+      {
+        continue;
+      }
+      
+      // Get rid of end-of-line comments
+      line = line.split(COMMENT_PREFIX)[0];
+      
+      // If we are here, the remainder should be assembly code
+      // Replace labels with their values
+      
+      String[] tokens = line.split("\\s+");
+      
+      // If there is only one token, it could legally be a zero-argument instruction. No labels to replace
+      if (!(tokens.length == 1))
+      {
+        // The only token which may legally be a label is the last one
+        String lastArg = tokens[tokens.length - 1];
+
+        // Check if the token doesn't look like a register
+        if (!(lastArg.startsWith(Instruction.REGISTER_PREFIX)))
+        {
+          // Hopefully it is a label
+          if (!(labelMapping.containsKey(lastArg)))
+          {
+            throw new UndefinedLabelException(lastArg);
+          }
+          
+          // Replace the label before trying to construct machine code
+          StringBuilder newLine = new StringBuilder();
+          
+          // Put the first arguments back together in the order they came
+          for (int index = 0; index < tokens.length - 1; index++ )
+          {
+            newLine.append(tokens[index] + " ");
+          }
+          
+          // Replace the label with its value
+          newLine.append(Instruction.IMMEDIATE_PREFIX + labelMapping.get(lastArg).getAddress().toString());
+        }
+      }
+      
+      Instruction thisInstruction = Instruction.createInstruction(line, labelMapping);
+      machineCode.addAll(Arrays.asList((thisInstruction.getMachineCode())));
+    }
+    
+    // Convert ArrayList to byte[]
+    byte[] toReturn = new byte[machineCode.size()];
+    for (int index = 0; index < machineCode.size(); index ++)
+    {
+      toReturn[index] = machineCode.get(index);
+    }
+    return toReturn;
   }
   
 }

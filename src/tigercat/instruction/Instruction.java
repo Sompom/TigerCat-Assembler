@@ -49,9 +49,8 @@ public abstract class Instruction
   static final int ZERO_ARGUMENTS = 0;
   
   // What tokens the assembly expects
-  static final String REGISTER_PREFIX = "%";
-  static final String IMMEDIATE_PREFIX = "$";
-  static final String COMMENT_PREFIX = "#";
+  public static final String REGISTER_PREFIX = "%";
+  public static final String IMMEDIATE_PREFIX = "$";
 
   /**
    * Record whether an instruction operates on single-word or double-word data

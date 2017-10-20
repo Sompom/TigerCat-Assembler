@@ -20,12 +20,12 @@ import tigercat.instruction.Instruction.DataWidth;
  */
 public abstract class Instruction
 {
-  
+
   /**
    * Every instruction is four bytes (32-bits, two words)
    */
   static final int BYTES_PER_INSTRUCTION = 4;
-  
+
   // Size Definitions (in bits)
   static final int SIZEOF_INSTRUCTION               = 32;
   static final int SIZEOF_OPCODE                    = 5;
@@ -144,16 +144,24 @@ public abstract class Instruction
     
     return convertIntToByteArray(this.machineCode);
   }
-  
+
+  /**
+   * Return a byte array representing the number. Converts a number from java's internal
+   * form to a byte array for use in the assembled program.
+   *
+   * @param input The number to convert to bytes
+   * @return A little-endian byte-array representation of the number //todo: verify
+   */
   public static Byte[] convertIntToByteArray(int input)
   {
     Byte[] toReturn = new Byte[4];
     int mask = 0xFF000000;
 
+    // Takes each byte in turn of the input and stores it into the toReturn array
     for (int index = 0; index < toReturn.length; index++)
     {
       toReturn[index] = (byte) ((input & mask) >> (8 * (toReturn.length - 1 - index)));
-      mask = mask >>> 8;
+      mask = mask >>> 8; //logical right shift
     }
 
     return toReturn;
@@ -173,8 +181,7 @@ public abstract class Instruction
   /**
    * Converts the given line of assembly into an Instruction object
    * 
-   * @param line
-   *          Line of assembly which corresponds to a machine instruction
+   * @param line Line of assembly which corresponds to a machine instruction
    * @return The newly-created instruction
    * @throws InvalidRegisterException 
    * @throws InstructionSyntaxError 
@@ -216,7 +223,7 @@ public abstract class Instruction
    * If labelMapping is defined, this function must instantiate in all class-level variables and
    * the top five bits of the top byte of machineCode should be set to the opcode
    * 
-   * @param line The instruction to create
+   * @param tokens The instruction to create
    * @param labelMapping Resolve labels to addresses
    * @throws InvalidDataWidthException If the instruction specifies an unrecognized data width
    * @throws InstructionSyntaxError 
@@ -278,8 +285,17 @@ public abstract class Instruction
     arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
 
   }
-  
-  protected static void checkInstructionSyntax(String[] tokens, int numArguments)
+
+  /**
+   * Checks a given instruction against design invariants, throwing an exception if the
+   * requirements are not met
+   *
+   * @param tokens The instruction to check
+   * @throws InstructionSyntaxError Triggers if an immediate was found where we weren't expecting one
+   * or a token we could not classify was found.
+   */
+  //todo: move into instruction constructor
+  protected static void checkInstructionSyntax(String[] tokens, int numArguments) //todo: numArguments never used
       throws InstructionArgumentCountException, 
       InvalidOpcodeException,
       InstructionSyntaxError
@@ -306,7 +322,7 @@ public abstract class Instruction
         }
         else 
         {
-          throw new InstructionSyntaxError("Immediate encoutered at non-end-of-line");
+          throw new InstructionSyntaxError("Immediate encountered at non-end-of-line");
         }
       }
       
@@ -386,7 +402,7 @@ public abstract class Instruction
       {
         switch (argument)
         {
-        case Argument.ZERO_REG:
+        case Argument.ZERO_REG: //todo: magic numbers are evil (put this into a lookup xml file)
           return new Byte[] { 0x7 };
         case "r1l":
           return new Byte[] { 0x0 };

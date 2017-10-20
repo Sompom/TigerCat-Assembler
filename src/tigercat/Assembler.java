@@ -57,14 +57,38 @@ public class Assembler
     {
       HashMap<String, Label> labelMapping = firstPass(assembly);
       machineCode = secondPass(assembly, labelMapping);
-    } catch (InstructionArgumentCountException | InvalidOpcodeException | InstructionSyntaxError
-        | InvalidRegisterException | InvalidDataWidthException | UndefinedLabelException e)
+    } catch (InstructionArgumentCountException e)
+    {
+      // TODO: Split catch per-exception and print useful error messages
+      e.printStackTrace();
+      System.exit(1);
+    } catch (InvalidOpcodeException e)
+    {
+      // TODO: Split catch per-exception and print useful error messages
+      e.printStackTrace();
+      System.exit(1);
+    } catch (InstructionSyntaxError e)
+    {
+      // TODO: Split catch per-exception and print useful error messages
+      e.printStackTrace();
+      System.exit(1);
+    } catch (InvalidRegisterException e)
+    {
+      // TODO: Split catch per-exception and print useful error messages
+      e.printStackTrace();
+      System.exit(1);
+    } catch (InvalidDataWidthException e)
+    {
+      // TODO: Split catch per-exception and print useful error messages
+      e.printStackTrace();
+      System.exit(1);
+    } catch (UndefinedLabelException e)
     {
       // TODO: Split catch per-exception and print useful error messages
       e.printStackTrace();
       System.exit(1);
     }
-    
+
     return machineCode;
   }
   
@@ -78,7 +102,9 @@ public class Assembler
    * @throws InvalidOpcodeException 
    * @throws InstructionArgumentCountException 
    */
-  protected HashMap<String, Label> firstPass(String assembly) throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  protected HashMap<String, Label> firstPass(String assembly)
+          throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError,
+          InvalidRegisterException, InvalidDataWidthException
   {
     HashMap<String, Label> labelMapping = new HashMap<String, Label>();
     Integer offsetAddress = MACHINE_CODE_START; // Offset from the first instruction
@@ -156,7 +182,9 @@ public class Assembler
     return labelMapping;
   }
   
-  protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping) throws UndefinedLabelException, InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping)
+          throws UndefinedLabelException, InstructionArgumentCountException, InvalidOpcodeException,
+          InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
     ArrayList<Byte> machineCode = new ArrayList<Byte>();
     

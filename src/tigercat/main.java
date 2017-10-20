@@ -24,23 +24,23 @@ public class main
       printHelp(System.out);
       System.exit(0);
     }
-    
+
     Path inputPath = Paths.get(args[0]);
     Path outputPath = Paths.get(args[1]);
-    
+
     // Check that the input file exists
     if (!Files.exists(inputPath))
     {
       System.err.println("Input file does not exist");
       System.exit(1);
     }
-    
+
     String inputString = new String(Files.readAllBytes(inputPath), Charset.defaultCharset());
-    
-    //TODO: Decide whether Assembler should be static class
+
+    // TODO: Decide whether Assembler should be static class
     Assembler assembler = new Assembler();
     byte[] outputMC = assembler.assemble(inputString);
-    
-    Files.write(outputPath, outputMC, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING );
+
+    Files.write(outputPath, outputMC, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
   }
 }

@@ -238,7 +238,7 @@ public abstract class Instruction
     checkInstructionSyntax(tokens, num_args);
 
     String opcode = tokens[0];
-    String last_arg = tokens[num_args - 1];
+    String last_arg = tokens[num_args];
 
     // Add the data-width flag to the machine code
     if (opcode.endsWith("w"))
@@ -269,10 +269,13 @@ public abstract class Instruction
       throw new InstructionSyntaxError("Undefined prefix on " + last_arg);
     }
     
-    for (int index = 0; index < num_args; index++)
+    // All but the last argument are certainly registers
+    for (int index = 0; index < num_args - 1; index++)
     {
-      arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, this.instructionType);
+      arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, DataType.REGISTER);
     }
+    // The last argument may be an immediate, depending on the type of instruction
+    arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
 
   }
   
@@ -418,12 +421,14 @@ public abstract class Instruction
      * 32-bits, even though no immediate can legally have that length
      * 
      * @param argument
-     *          A string containing an immediate value
+     *          A string containing a hexadecimal immediate value, including 0x prefix
      * @return Machine Code representation of the immediate value
      */
     protected Byte[] parseImmediate(String argument)
     {
-      return convertIntToByteArray(new Integer(argument));
+      // Strip 0x prefix
+      argument = argument.substring(2);
+      return convertIntToByteArray(Integer.parseInt(argument, 16));
     }
   }
 }

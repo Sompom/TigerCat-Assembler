@@ -102,5 +102,14 @@ public class TigerCatInstructionTester
     Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", new HashMap<String, Label>());
     Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", new HashMap<String, Label>()).getMachineCode(), toCheck.getMachineCode());
   }
+  
+  @Test
+  public void testADDWImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  {
+    String toTest = "addw %r1l %r1l $0x500";
+    Byte[] correct = {0x00, 0x00, 0x00, 0x00};
+    Instruction toCheck = Instruction.createInstruction(toTest, new HashMap<String, Label>());
+    Assert.assertArrayEquals(correct, toCheck.getMachineCode());
+  }
 
 }

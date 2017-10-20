@@ -10,9 +10,6 @@ package tigercat.instruction;
 import java.util.HashMap;
 
 import tigercat.Label;
-import tigercat.instruction.Instruction.Argument;
-import tigercat.instruction.Instruction.DataType;
-import tigercat.instruction.Instruction.DataWidth;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -242,7 +239,7 @@ public abstract class Instruction
       throw new InstructionArgumentCountException();
     }
     
-    checkInstructionSyntax(tokens, num_args);
+    checkInstructionSyntax(tokens);
 
     String opcode = tokens[0];
     String last_arg = tokens[num_args];
@@ -295,10 +292,8 @@ public abstract class Instruction
    * or a token we could not classify was found.
    */
   //todo: move into instruction constructor
-  protected static void checkInstructionSyntax(String[] tokens, int numArguments) //todo: numArguments never used
-      throws InstructionArgumentCountException, 
-      InvalidOpcodeException,
-      InstructionSyntaxError
+  protected static void checkInstructionSyntax(String[] tokens)
+      throws InstructionSyntaxError
   {
     String opcode = tokens[0];
     

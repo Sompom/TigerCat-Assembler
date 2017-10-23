@@ -2,7 +2,7 @@ package tigercat.instruction;
 
 public class InvalidDataWidthException extends Exception
 {
-  String opcode;
+  public String opcode;
   
   public InvalidDataWidthException(String opcode)
   {

@@ -12,7 +12,7 @@ public class main
 {
   static void printHelp(PrintStream outstream)
   {
-    outstream.println("TigerCat Assmbler Usage:");
+    outstream.println("TigerCat Assembler Usage:");
     outstream.println("\tFirst Argument: Input assembly (ASCII) file");
     outstream.println("\tSecond Argument: Output machine code (binary) file");
   }

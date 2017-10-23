@@ -57,35 +57,41 @@ public class Assembler
     {
       HashMap<String, Label> labelMapping = firstPass(assembly);
       machineCode = secondPass(assembly, labelMapping);
-    } catch (InstructionArgumentCountException e)
+    }
+    catch (InstructionArgumentCountException e)
     {
-      // TODO: Split catch per-exception and print useful error messages
       e.printStackTrace();
+      System.err.println("Instruction argument count was wrong");
       System.exit(1);
-    } catch (InvalidOpcodeException e)
+    }
+    catch (InvalidOpcodeException e)
     {
-      // TODO: Split catch per-exception and print useful error messages
       e.printStackTrace();
+      System.err.println("Invalid opcode: " + e.opcode);
       System.exit(1);
-    } catch (InstructionSyntaxError e)
+    }
+    catch (InstructionSyntaxError e)
     {
-      // TODO: Split catch per-exception and print useful error messages
       e.printStackTrace();
+      System.err.println(e.message);
       System.exit(1);
-    } catch (InvalidRegisterException e)
+    }
+    catch (InvalidRegisterException e)
     {
-      // TODO: Split catch per-exception and print useful error messages
       e.printStackTrace();
+      System.err.println("Invalid register: " + e.invalid_register);
       System.exit(1);
-    } catch (InvalidDataWidthException e)
+    }
+    catch (InvalidDataWidthException e)
     {
-      // TODO: Split catch per-exception and print useful error messages
       e.printStackTrace();
+      System.err.println("Invalid data width on opcode: " + e.opcode);
       System.exit(1);
-    } catch (UndefinedLabelException e)
+    }
+    catch (UndefinedLabelException e)
     {
-      // TODO: Split catch per-exception and print useful error messages
       e.printStackTrace();
+      System.err.println("Undefined label: "+ e.label);
       System.exit(1);
     }
 

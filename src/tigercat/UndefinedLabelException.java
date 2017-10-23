@@ -2,7 +2,7 @@ package tigercat;
 
 public class UndefinedLabelException extends Exception
 {
-  String label;
+  public String label;
   
   public UndefinedLabelException(String label)
   {

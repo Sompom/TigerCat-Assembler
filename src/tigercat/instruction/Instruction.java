@@ -209,7 +209,7 @@ public abstract class Instruction
       return new MoveInstruction(tokens, labelMapping);
     }
 
-    throw new InvalidOpcodeException("Unable to create instruction from " + line);
+    throw new InvalidOpcodeException("Unable to create instruction from: " + line);
   }
   
   /**

@@ -2,7 +2,7 @@ package tigercat.instruction;
 
 public class InstructionSyntaxError extends Exception
 {
-  String message;
+  public String message;
   
   public InstructionSyntaxError(String message)
   {

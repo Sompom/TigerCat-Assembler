@@ -258,6 +258,8 @@ public abstract class Instruction
   /**
    * Create an Instruction from the given string
    * 
+   * If encodingValid is false, getMachineCode() is undefined
+   * 
    * @param tokens The instruction to create
    * @param encodingValid Whether the passed token[] should be convertible to machine code
    *                      (I.e., whether labels have been replaced
@@ -273,7 +275,7 @@ public abstract class Instruction
     this.machineCode = 0;
     this.arguments = new Argument[num_args];
     
-    if (tokens.length < num_args + 1)
+    if (tokens.length != num_args + 1)
     {
       throw new InstructionArgumentCountException();
     }

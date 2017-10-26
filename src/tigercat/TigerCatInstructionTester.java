@@ -125,5 +125,17 @@ public class TigerCatInstructionTester
     exception.expect(InvalidOpcodeException.class);
     Instruction.createInstruction(toTest, false);
   }
+  
+  @Test
+  /**
+   * Test that an opcode with the wrong number of arguments throws an error
+   */
+  public void testArgumentCount1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  {
+    String toTest = "movw %r1l %r1l %r1l";
+    
+    exception.expect(InstructionArgumentCountException.class);
+    Instruction.createInstruction(toTest, true);
+  }
 
 }

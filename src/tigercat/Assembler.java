@@ -101,7 +101,7 @@ public class Assembler
         }
 
         // Ignore comment lines
-        if (line.matches("^\\s*" + COMMENT_PREFIX))
+        if (line.matches("^\\s*" + COMMENT_PREFIX + ".*"))
         {
           continue;
         }
@@ -208,7 +208,7 @@ public class Assembler
         }
         
         // Ignore comment lines
-        if (line.matches("^\\s*" + COMMENT_PREFIX))
+        if (line.matches("^\\s*" + COMMENT_PREFIX + ".*"))
         {
           continue;
         }

@@ -157,21 +157,21 @@ public class Assembler
     catch (InstructionSyntaxError e)
     {
       e.printStackTrace();
-      System.err.println("Error on line " +  lineIndex + 1);
+      System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.println(e.message);
       System.exit(1);
     } catch (InstructionArgumentCountException e)
     {
       e.printStackTrace();
-      System.err.println("Error on line " +  lineIndex + 1);
+      System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.println("Instruction argument count was wrong");
       System.exit(1);
     } catch (InvalidOpcodeException e)
     {
       e.printStackTrace();
-      System.err.println("Error on line " +  lineIndex + 1);
+      System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.println("Invalid opcode: " + e.opcode);
       System.exit(1);
@@ -179,7 +179,7 @@ public class Assembler
     catch (InvalidRegisterException e)
     {
       e.printStackTrace();
-      System.err.println("Error on line " +  lineIndex + 1);
+      System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.println("Invalid register: " + e.invalid_register);
       System.exit(1);
@@ -187,7 +187,7 @@ public class Assembler
     catch (InvalidDataWidthException e)
     {
       e.printStackTrace();
-      System.err.println("Error on line " +  lineIndex + 1);
+      System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.println("Invalid data width on opcode: " + e.opcode);
       System.exit(1);
@@ -288,14 +288,14 @@ public class Assembler
     catch (UndefinedLabelException e)
     {
       e.printStackTrace();
-      System.err.println("Error on line " +  lineIndex + 1);
+      System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.println("Undefined label: "+ e.label);
       System.exit(1);
     } catch (UnencodeableImmediateException e)
     {
       e.printStackTrace();
-      System.err.println("Error on line " +  lineIndex + 1);
+      System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.print(e.message + ": " + Integer.toHexString(e.immediateValue));
       System.exit(1);

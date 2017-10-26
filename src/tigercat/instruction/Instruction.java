@@ -123,7 +123,7 @@ public abstract class Instruction
       assert arguments[index].getArgumentType() == DataType.REGISTER : "Expected register argument";
       
       shiftDistance -= arguments[index].getEncodingSize();
-      this.machineCode |= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
+      this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
     }
     
     switch(arguments[index].argumentType)
@@ -131,7 +131,7 @@ public abstract class Instruction
     case REGISTER:
       // Shift in the register, as normal
       shiftDistance -= arguments[index].getEncodingSize();
-      this.machineCode |= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
+      this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
       break;
     case IMMEDIATE:
       // TODO: Handle encoding immediate value
@@ -330,7 +330,7 @@ public abstract class Instruction
   {
     protected static final String ZERO_REG = "zero";
     
-    protected Byte[] machineCodeRepresentation;
+    protected int machineCodeRepresentation;
     protected DataType argumentType;
     protected int size;
     
@@ -339,7 +339,7 @@ public abstract class Instruction
       return argumentType;
     }
     
-    public Byte[] getMachineCodeRepresentation()
+    public int getMachineCodeRepresentation()
     {
       return machineCodeRepresentation;
     }
@@ -391,20 +391,20 @@ public abstract class Instruction
      * @throws InvalidRegisterException
      *           If an undefined register is encountered
      */
-    protected Byte[] parseRegister(String argument, DataWidth dataWidth) throws InvalidRegisterException
+    protected int parseRegister(String argument, DataWidth dataWidth) throws InvalidRegisterException
     {
       if (dataWidth == DataWidth.SINGLE_WORD)
       {
         switch (argument)
         {
         case Argument.ZERO_REG: //todo: magic numbers are evil (put this into a lookup xml file)
-          return new Byte[] { 0x7 };
+          return 0xF;
         case "r1l":
-          return new Byte[] { 0x0 };
+          return 0x0;
         case "r2l":
-          return new Byte[] { 0x1 };
+          return 0x1;
         case "a1l":
-          return new Byte[] { 0x2 };
+          return 0x2;
         default:
           throw new InvalidRegisterException(argument);
         }
@@ -413,11 +413,11 @@ public abstract class Instruction
         switch (argument)
         {
         case "ret1":
-          return new Byte[] { 0x0 };
+          return 0x0;
         case "ret2":
-          return new Byte[] { 0x1 };
+          return 0x1;
         case "arg1":
-          return new Byte[] { 0x2 };
+          return 0x2;
         default:
           throw new InvalidRegisterException(argument);
         }
@@ -435,11 +435,11 @@ public abstract class Instruction
      *          A string containing a hexadecimal immediate value, including 0x prefix
      * @return Machine Code representation of the immediate value
      */
-    protected Byte[] parseImmediate(String argument)
+    protected int parseImmediate(String argument)
     {
       // Strip 0x prefix
       argument = argument.substring(2);
-      return convertIntToByteArray(Integer.parseInt(argument, 16));
+      return Integer.parseInt(argument, 16);
     }
   }
 }

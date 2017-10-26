@@ -151,7 +151,7 @@ public class Assembler
         
         // If none of the other patterns, line is either an assembly code or invalid
         // If it is invalid, trying to create an instruction will throw a useful exception
-        offsetAddress = Instruction.createInstruction(line, null).getSize();
+        offsetAddress = Instruction.createInstruction(line, false).getSize();
       }
     }
     catch (InstructionSyntaxError e)
@@ -281,7 +281,7 @@ public class Assembler
           }
         }
         
-        Instruction thisInstruction = Instruction.createInstruction(line, labelMapping);
+        Instruction thisInstruction = Instruction.createInstruction(line, true);
         machineCode.addAll(Arrays.asList((thisInstruction.getMachineCode())));
       }
     }

@@ -213,6 +213,7 @@ public abstract class Instruction
    * Converts the given line of assembly into an Instruction object
    * 
    * @param line Line of assembly which corresponds to a machine instruction
+   * @param encodingValid Whether labels have been replaced yet
    * @return The newly-created instruction
    * @throws InvalidRegisterException 
    * @throws InstructionSyntaxError 
@@ -220,7 +221,7 @@ public abstract class Instruction
    * @throws InstructionArgumentCountException 
    * @throws InvalidDataWidthException 
    */
-  public static Instruction createInstruction(String line, HashMap<String, Label> labelMapping)
+  public static Instruction createInstruction(String line, boolean encodingValid)
       throws InstructionArgumentCountException,
       InvalidOpcodeException,
       InstructionSyntaxError,
@@ -232,15 +233,15 @@ public abstract class Instruction
     
     if (opcode.startsWith("add"))
     {
-      return new AddInstruction(tokens, labelMapping);
+      return new AddInstruction(tokens, encodingValid);
     }
     if (opcode.startsWith("sub"))
     {
-      return new SubInstruction(tokens, labelMapping);
+      return new SubInstruction(tokens, encodingValid);
     }
     if (opcode.startsWith("mov"))
     {
-      return new MoveInstruction(tokens, labelMapping);
+      return new MoveInstruction(tokens, encodingValid);
     }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
@@ -249,20 +250,16 @@ public abstract class Instruction
   /**
    * Create an Instruction from the given string
    * 
-   * An Instruction may be created with null labelMapping, in which case only getSize() is defined
-   * 
-   * If labelMapping is defined, this function must instantiate in all class-level variables and
-   * the top five bits of the top byte of machineCode should be set to the opcode
-   * 
    * @param tokens The instruction to create
-   * @param labelMapping Resolve labels to addresses
+   * @param encodingValid Whether the passed token[] should be convertible to machine code
+   *                      (I.e., whether labels have been replaced
    * @throws InvalidDataWidthException If the instruction specifies an unrecognized data width
    * @throws InstructionSyntaxError 
    * @throws InstructionArgumentCountException 
    * @throws InvalidOpcodeException 
    * @throws InvalidRegisterException 
    */
-  protected Instruction(String[] tokens, HashMap<String, Label> labelMapping, int opcode_encoding, int num_args)
+  protected Instruction(String[] tokens, boolean encodingValid, int opcode_encoding, int num_args)
       throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException, InvalidOpcodeException, InvalidRegisterException
   {
     this.machineCode = 0;

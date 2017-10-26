@@ -46,19 +46,19 @@ public class MoveInstruction extends Instruction
     return toReturn;
   }
 
-  public MoveInstruction(String[] tokens, HashMap<String, Label> labelMapping)
+  public MoveInstruction(String[] tokens, boolean encodingValid)
       throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException,
       InvalidOpcodeException, InvalidRegisterException
   {
     // TODO: Top-level pseudo-instruction (dummy) constructor
-    super(tokens, labelMapping, 0x00, TWO_ARGUMENTS);
+    super(tokens, encodingValid, 0x00, TWO_ARGUMENTS);
     
     if (this.dataWidth == DataWidth.SINGLE_WORD)
     {
       childInstructions = new Instruction[1];
       // Construct the pseudo instruction by adding the mov argument to zero and storing into the mov destination 
       String child = "addw " + tokens[1] + " " + Instruction.REGISTER_PREFIX + Argument.ZERO_REG + " " + tokens[2]; 
-      childInstructions[0] = Instruction.createInstruction(child, labelMapping);
+      childInstructions[0] = Instruction.createInstruction(child, encodingValid);
     }
     else if (this.dataWidth == DataWidth.DOUBLE_WORD)
     {
@@ -66,6 +66,9 @@ public class MoveInstruction extends Instruction
       // Decompose to two movw instructions
       // TODO: Handle double-word move
       throw new NotImplementedException();
+    } else
+    {
+      assert false : "Undefined dataWidth";
     }
   }
 

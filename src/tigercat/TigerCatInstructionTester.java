@@ -39,69 +39,69 @@ public class TigerCatInstructionTester
   @Test
   public void testCreateInstructionNoMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", null);
+    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", false);
   }
 
   @Test
   public void testCreateInstructionWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
   }
 
   @Test
   public void testGetSizeNoMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", null);
+    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", false);
     Assert.assertEquals((Integer)2, toCheck.getSize());
   }
 
   @Test
   public void testGetSizeWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
     Assert.assertEquals((Integer)2, toCheck.getSize());
   }
 
   @Test
   public void testGetMachineCodeWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x06, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetADDCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
-    Instruction toCheck = Instruction.createInstruction("addcd %arg1 %arg1 %arg1", new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction("addcd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x0E, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetADDDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x06, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetSUBCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
-    Instruction toCheck = Instruction.createInstruction("subcd %arg1 %arg1 %arg1", new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction("subcd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x1E, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetSUBDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
-    Instruction toCheck = Instruction.createInstruction("subd %arg1 %arg1 %arg1", new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction("subd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x16, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetMOVWMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
-    Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", new HashMap<String, Label>());
-    Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", new HashMap<String, Label>()).getMachineCode(), toCheck.getMachineCode());
+    Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", true);
+    Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", true).getMachineCode(), toCheck.getMachineCode());
   }
   
   @Test
@@ -109,7 +109,7 @@ public class TigerCatInstructionTester
   {
     String toTest = "addw %r1l %r1l $0x500";
     Byte[] correct = {0x00, 0x00, 0x05, 0x00};
-    Instruction toCheck = Instruction.createInstruction(toTest, new HashMap<String, Label>());
+    Instruction toCheck = Instruction.createInstruction(toTest, true);
     Assert.assertArrayEquals(correct, toCheck.getMachineCode());
   }
 

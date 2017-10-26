@@ -6,7 +6,7 @@ public class InvalidRegisterException extends AssemblerException
 {
   private static final long serialVersionUID = 7319699311294089366L;
   
-  public String invalid_register;
+  private String invalid_register;
   
   public InvalidRegisterException(String invalid_register)
   {

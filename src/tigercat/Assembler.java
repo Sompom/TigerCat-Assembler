@@ -18,6 +18,8 @@ import tigercat.instruction.InvalidOpcodeException;
 import tigercat.instruction.InvalidRegisterException;
 import tigercat.instruction.UnencodeableImmediateException;
 
+import static java.lang.System.exit;
+
 public class Assembler
 {
   /**
@@ -48,19 +50,15 @@ public class Assembler
   public byte[] assemble(String assembly)
   {
     byte[] machineCode = null;
-    HashMap<String, Label> labelMapping = firstPass(assembly);
-    try
-    {
-      machineCode = secondPass(assembly, labelMapping);
-    } catch (InstructionArgumentCountException | InvalidOpcodeException | InstructionSyntaxError
-        | InvalidRegisterException | InvalidDataWidthException e)
-    {
-      // This should never be hit!!!
-      // They were all checked in the first pass
-      e.printStackTrace();
-      assert false : "Hit code thought to be unreachable";
-    }
+    ArrayList<AssemblerException> exceptionList = new ArrayList<>();
 
+    HashMap<String, Label> labelMapping = firstPass(assembly, exceptionList);
+    machineCode = secondPass(assembly, labelMapping, exceptionList);
+
+    if(exceptionList.size() > 0) {
+      printExceptions(exceptionList);
+      exit(1);
+    }
     return machineCode;
   }
   
@@ -69,7 +67,7 @@ public class Assembler
    * @param assembly Assembly lines to parse
    * @return Mapping of strings to addresses
    */
-  protected HashMap<String, Label> firstPass(String assembly)
+  protected HashMap<String, Label> firstPass(String assembly, ArrayList<AssemblerException> exceptionList)
   {
     HashMap<String, Label> labelMapping = new HashMap<String, Label>();
     Integer offsetAddress = MACHINE_CODE_START; // Offset from the first instruction
@@ -89,14 +87,12 @@ public class Assembler
     
     String[] lines = assembly.split(System.getProperty("line.separator"));
 
-    ArrayList<AssemblerException> exceptionList = new ArrayList<>();
     try {
       for (lineIndex = 0; lineIndex < lines.length; lineIndex++) {
         String line = lines[lineIndex];
 
         // Ignore blank lines
-        if (line.matches("^\\s*$"))
-        {
+        if (line.matches("^\\s*$")) {
           continue;
         }
 
@@ -111,27 +107,23 @@ public class Assembler
 
         // Determine whether the line starts with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-        if (line.matches("^\\s*[A-Z]+" + LABEL_SUFFIX))
-        {
+        if (line.matches("^\\s*[A-Z]+" + LABEL_SUFFIX)) {
           String labelName = line.trim();
           // Remove colon
           labelName = labelName.substring(0, labelName.length() - 1);
 
-          if (labelMapping.containsKey(labelName))
-          {
+          if (labelMapping.containsKey(labelName)) {
             throw new DoubleDefinedLabelException(labelName);
           }
 
           Label toStore;
 
           // For simplicity, this assembler requires labels be on their own line
-          if (!(line.matches("^\\s*[A-Z]+:\\s$")))
-          {
+          if (!(line.matches("^\\s*[A-Z]+:\\s$"))) {
             throw new InstructionSyntaxError("Labels must be on their own line");
           }
           String nextLine;
-          if (lineIndex < lines.length - 1)
-          {
+          if (lineIndex < lines.length - 1) {
             // This label is at the end of the assembly file. Why?
             // Implement this when a sensible solution has been found, otherwise
             // don't write assembly which does this!
@@ -139,8 +131,7 @@ public class Assembler
           }
           nextLine = lines[lineIndex + 1];
           // We need to peek the next line to check for a data declaration
-          if (nextLine.matches("^\\s*\\.data"))
-          {
+          if (nextLine.matches("^\\s*\\.data")) {
             // TODO: Store data label
             throw new NotImplementedException();
           } else {
@@ -163,12 +154,12 @@ public class Assembler
       //if (e instanceof InstructionSyntaxError) {...
       
       //common actions for all exceptions
-      e.printStackTrace();
+      //e.printStackTrace();
       e.setContext(lineIndex, lines[lineIndex]);
       exceptionList.add(e);
     }
 
-    printExceptions(exceptionList);
+    //printExceptions(exceptionList);
     return labelMapping;
   }
 
@@ -179,9 +170,7 @@ public class Assembler
     }
   }
 
-  protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping)
-          throws InstructionArgumentCountException, InvalidOpcodeException,
-          InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping, ArrayList<AssemblerException> exceptionList)
   {
     ArrayList<Byte> machineCode = new ArrayList<Byte>();
     int lineIndex = 0;
@@ -268,20 +257,12 @@ public class Assembler
         machineCode.addAll(Arrays.asList((thisInstruction.getMachineCode())));
       }
     }
-    catch (UndefinedLabelException e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.println("Undefined label: "+ e.label);
-      System.exit(1);
-    } catch (UnencodeableImmediateException e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.print(e.message + ": " + Integer.toHexString(e.immediateValue));
-      System.exit(1);
+    catch (UndefinedLabelException | UnencodeableImmediateException | InstructionArgumentCountException
+            | InvalidOpcodeException | InstructionSyntaxError | InvalidRegisterException
+            | InvalidDataWidthException e) {
+
+      e.setContext(lineIndex, lines[lineIndex]);
+      exceptionList.add(e);
     }
     
     // Convert ArrayList to byte[]

@@ -118,6 +118,9 @@ public class TigerCatInstructionTester
   }
   
   @Test
+  /**
+   * Test that a mistyped opcode will throw an exception
+   */
   public void testInvalidOpcode1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
     String toTest = "adddw %r1l %r1l %r1l";
@@ -136,6 +139,54 @@ public class TigerCatInstructionTester
     
     exception.expect(InstructionArgumentCountException.class);
     Instruction.createInstruction(toTest, true);
+  }
+  
+  @Test
+  /**
+   * Test that an instruction which uses a mistyped register throws an exception
+   */
+  public void testInvalidRegister() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  {
+    String toTest = "movw %r1l %r5l";
+    
+    exception.expect(InvalidRegisterException.class);
+    Instruction.createInstruction(toTest, true);
+  }
+  
+  @Test
+  /**
+   * Test that a single-word instruction which uses a too-big immediate throws an exception
+   */
+  public void testUnencodeableImmediate1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
+  {
+    String toTest = "addw %r1l %a1l $0x10000";
+    
+    exception.expect(UnencodeableImmediateException.class);
+    Instruction.createInstruction(toTest, true).getMachineCode();
+  }
+  
+  @Test
+  /**
+   * Test that a double-word instruction which uses a too-big immediate throws an exception
+   */
+  public void testUnencodeableImmediate2() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
+  {
+    String toTest = "addd %ret1 %arg1 $0x80000";
+    
+    exception.expect(UnencodeableImmediateException.class);
+    Instruction.createInstruction(toTest, true).getMachineCode();
+  }
+  
+  @Test
+  /**
+   * Test that the largest legal immediate can be encoded for double-word add
+   */
+  public void testADDDLargeImmediate() throws UnencodeableImmediateException, InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  {
+    String toTest = "addd %ret1 %arg1 $0x7FFFF";
+
+    Instruction.createInstruction(toTest, true).getMachineCode();
+    // If an exception is not thrown, this test succeeds
   }
 
 }

@@ -257,23 +257,27 @@ public class Assembler
           // Check if the token doesn't look like a register
           if (!(lastArg.startsWith(Instruction.REGISTER_PREFIX)))
           {
-            // Hopefully it is a label
-            if (!(labelMapping.containsKey(lastArg)))
+            // Maybe it is an immediate?
+            if (!(lastArg.startsWith(Instruction.IMMEDIATE_PREFIX)))
             {
-              throw new UndefinedLabelException(lastArg);
+              // Hopefully it is a label
+              if (!(labelMapping.containsKey(lastArg)))
+              {
+                throw new UndefinedLabelException(lastArg);
+              }
+              
+              // Replace the label before trying to construct machine code
+              StringBuilder newLine = new StringBuilder();
+              
+              // Put the first arguments back together in the order they came
+              for (int index = 0; index < tokens.length - 1; index++ )
+              {
+                newLine.append(tokens[index] + " ");
+              }
+              
+              // Replace the label with its value
+              newLine.append(Instruction.IMMEDIATE_PREFIX + labelMapping.get(lastArg).getAddress().toString());
             }
-            
-            // Replace the label before trying to construct machine code
-            StringBuilder newLine = new StringBuilder();
-            
-            // Put the first arguments back together in the order they came
-            for (int index = 0; index < tokens.length - 1; index++ )
-            {
-              newLine.append(tokens[index] + " ");
-            }
-            
-            // Replace the label with its value
-            newLine.append(Instruction.IMMEDIATE_PREFIX + labelMapping.get(lastArg).getAddress().toString());
           }
         }
         

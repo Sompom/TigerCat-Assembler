@@ -502,7 +502,7 @@ public abstract class Instruction
     {
       // Strip 0x prefix
       argument = argument.substring(2);
-      return Integer.parseInt(argument, 16);
+      return Integer.parseUnsignedInt(argument, 16);
     }
   }
 }

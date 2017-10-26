@@ -74,15 +74,15 @@ public class MoveInstruction extends Instruction
         int immediate = immediateArg.getMachineCodeRepresentation();
         
         int lowerImmediate = immediate & 0xFFFF;
-        int upperImmediate = (immediate & ~0xFFFF) >> 16; 
+        int upperImmediate = (immediate & ~0xFFFF) >>> 16; 
         
         // For the strip the leading prefix character from the destination register
         String dest = tokens[1].substring(REGISTER_PREFIX.length());
         
         String child1 = "movw " + REGISTER_PREFIX + Register.ConvertDoubleRegNameToSingleReg(dest, HalfReg.LOWER_HALF_REG)
-                        + " " + IMMEDIATE_PREFIX + "0x" + Integer.toString(lowerImmediate, 16);
+                        + " " + IMMEDIATE_PREFIX + "0x" + Integer.toUnsignedString(lowerImmediate, 16);
         String child2 = "movw " + REGISTER_PREFIX + Register.ConvertDoubleRegNameToSingleReg(dest, HalfReg.UPPER_HALF_REG)
-            + " " + IMMEDIATE_PREFIX + "0x" + Integer.toString(upperImmediate, 16);
+            + " " + IMMEDIATE_PREFIX + "0x" + Integer.toUnsignedString(upperImmediate, 16);
 
         childInstructions[0] = Instruction.createInstruction(child1, encodingValid);
         childInstructions[1] = Instruction.createInstruction(child2, encodingValid);

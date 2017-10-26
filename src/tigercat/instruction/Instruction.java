@@ -181,7 +181,7 @@ public abstract class Instruction
    * form to a byte array for use in the assembled program.
    *
    * @param input The number to convert to bytes
-   * @return A little-endian byte-array representation of the number //todo: verify
+   * @return A little-endian byte-array representation of the number
    */
   public static Byte[] convertIntToByteArray(int input)
   {

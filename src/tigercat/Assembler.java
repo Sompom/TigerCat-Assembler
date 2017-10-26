@@ -105,6 +105,9 @@ public class Assembler
         {
           continue;
         }
+        
+        // Get rid of end-of-line comments
+        line = line.split(COMMENT_PREFIX)[0];
 
         // Determine whether the line starts with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon

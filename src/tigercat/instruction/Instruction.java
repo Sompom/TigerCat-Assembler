@@ -277,7 +277,7 @@ public abstract class Instruction
     
     if (tokens.length != num_args + 1)
     {
-      throw new InstructionArgumentCountException();
+      throw new InstructionArgumentCountException(num_args, tokens.length - 1);
     }
     
     String opcode = tokens[0];

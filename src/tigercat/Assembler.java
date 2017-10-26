@@ -166,7 +166,7 @@ public class Assembler
       e.printStackTrace();
       System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
-      System.err.println("Instruction argument count was wrong");
+      System.err.println("Opcode takes " + e.expected + " arguments but " + e.actual + " were provided");
       System.exit(1);
     } catch (InvalidOpcodeException e)
     {

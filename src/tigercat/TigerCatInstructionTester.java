@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import java.util.HashMap;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import tigercat.instruction.Instruction;
 import tigercat.instruction.InstructionArgumentCountException;
@@ -17,6 +19,8 @@ import tigercat.instruction.UnencodeableImmediateException;
 
 public class TigerCatInstructionTester
 {
+  @Rule
+  public final ExpectedException exception = ExpectedException.none();
 
   @Test
   public void testConvertIntToByteArray1()
@@ -111,6 +115,15 @@ public class TigerCatInstructionTester
     Byte[] correct = {0x00, 0x00, 0x05, 0x00};
     Instruction toCheck = Instruction.createInstruction(toTest, true);
     Assert.assertArrayEquals(correct, toCheck.getMachineCode());
+  }
+  
+  @Test
+  public void testInvalidOpcode1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+  {
+    String toTest = "adddw %r1l %r1l %r1l";
+    
+    exception.expect(InvalidOpcodeException.class);
+    Instruction.createInstruction(toTest, false);
   }
 
 }

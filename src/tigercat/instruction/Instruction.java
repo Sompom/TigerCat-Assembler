@@ -454,7 +454,7 @@ public abstract class Instruction
       {
         switch (argument)
         {
-        case Argument.ZERO_REG: //todo: magic numbers are evil (put this into a lookup xml file)
+        case Argument.ZERO_REG: //TODO: magic numbers are evil (put this into a lookup xml file)
           return 0xF;
         case "r1l":
           return 0x0;

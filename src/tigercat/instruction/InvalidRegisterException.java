@@ -1,6 +1,8 @@
 package tigercat.instruction;
 
-public class InvalidRegisterException extends Exception
+import tigercat.AssemblerException;
+
+public class InvalidRegisterException extends AssemblerException
 {
   private static final long serialVersionUID = 7319699311294089366L;
   
@@ -9,5 +11,14 @@ public class InvalidRegisterException extends Exception
   public InvalidRegisterException(String invalid_register)
   {
     this.invalid_register = invalid_register;
+  }
+
+  private String generateMessage() {
+    return "Invalid register: " + invalid_register;
+  }
+
+  @Override
+  public String getDiagnostic() {
+    return getContextError() + generateMessage();
   }
 }

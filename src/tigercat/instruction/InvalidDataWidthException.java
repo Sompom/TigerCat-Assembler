@@ -1,6 +1,8 @@
 package tigercat.instruction;
 
-public class InvalidDataWidthException extends Exception
+import tigercat.AssemblerException;
+
+public class InvalidDataWidthException extends AssemblerException
 {
   private static final long serialVersionUID = -4846871555503481757L;
   
@@ -9,5 +11,14 @@ public class InvalidDataWidthException extends Exception
   public InvalidDataWidthException(String opcode)
   {
     this.opcode = opcode;
+  }
+
+  private String generateMessage() {
+    return "Invalid data width on opcode: " + opcode;
+  }
+
+  @Override
+  public String getDiagnostic() {
+    return getContextError() + generateMessage();
   }
 }

@@ -7,9 +7,7 @@
 
 package tigercat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tigercat.instruction.Instruction;
@@ -90,25 +88,24 @@ public class Assembler
     //      and incrementing it by the size of each label encountered
     
     String[] lines = assembly.split(System.getProperty("line.separator"));
-    
-    try
-    {
-      for (lineIndex = 0; lineIndex < lines.length; lineIndex++)
-      {
+
+    ArrayList<AssemblerException> exceptionList = new ArrayList<>();
+    try {
+      for (lineIndex = 0; lineIndex < lines.length; lineIndex++) {
         String line = lines[lineIndex];
-        
+
         // Ignore blank lines
         if (line.matches("^\\s*$"))
         {
           continue;
         }
-        
+
         // Ignore comment lines
         if (line.matches("^\\s*" + COMMENT_PREFIX))
         {
           continue;
         }
-        
+
         // Determine whether the line starts with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
         if (line.matches("^\\s*[A-Z]+" + LABEL_SUFFIX))
@@ -116,14 +113,14 @@ public class Assembler
           String labelName = line.trim();
           // Remove colon
           labelName = labelName.substring(0, labelName.length() - 1);
-          
+
           if (labelMapping.containsKey(labelName))
           {
             throw new DoubleDefinedLabelException(labelName);
           }
-          
+
           Label toStore;
-          
+
           // For simplicity, this assembler requires labels be on their own line
           if (!(line.matches("^\\s*[A-Z]+:\\s$")))
           {
@@ -143,70 +140,42 @@ public class Assembler
           {
             // TODO: Store data label
             throw new NotImplementedException();
-          } else
-          {
+          } else {
             // If not a data label, this is an address label
             toStore = new Label(labelName, offsetAddress);
           }
-          
+
           labelMapping.put(labelName, toStore);
           continue;
         }
-        
+
         // If none of the other patterns, line is either an assembly code or invalid
         // If it is invalid, trying to create an instruction will throw a useful exception
         offsetAddress = Instruction.createInstruction(line, false).getSize();
       }
+
+    } catch (InstructionSyntaxError | InstructionArgumentCountException | InvalidOpcodeException
+            | InvalidRegisterException | InvalidDataWidthException | DoubleDefinedLabelException e) {
+      //for specific types of exceptions:
+      //if (e instanceof InstructionSyntaxError) {...
+      
+      //common actions for all exceptions
+      e.printStackTrace();
+      e.setContext(lineIndex, lines[lineIndex]);
+      exceptionList.add(e);
     }
-    catch (InstructionSyntaxError e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.println(e.message);
-      System.exit(1);
-    } catch (InstructionArgumentCountException e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.println("Opcode takes " + e.expected + " arguments but " + e.actual + " were provided");
-      System.exit(1);
-    } catch (InvalidOpcodeException e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.println("Invalid opcode: " + e.opcode);
-      System.exit(1);
-    }
-    catch (InvalidRegisterException e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.println("Invalid register: " + e.invalid_register);
-      System.exit(1);
-    }
-    catch (InvalidDataWidthException e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.println("Invalid data width on opcode: " + e.opcode);
-      System.exit(1);
-    } catch (DoubleDefinedLabelException e)
-    {
-      e.printStackTrace();
-      System.err.println("Error on line " +  (lineIndex + 1));
-      System.err.println(lines[lineIndex]);
-      System.err.println("Label " + e.label + " has already been declared");
-      System.exit(1);
-    }
-    
+
+    printExceptions(exceptionList);
     return labelMapping;
   }
-  
+
+  private void printExceptions(ArrayList<AssemblerException> exceptionList) {
+    System.out.println("Errors:");
+    for (AssemblerException e : exceptionList) {
+      System.out.println(e.getDiagnostic());
+    }
+  }
+
   protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping)
           throws InstructionArgumentCountException, InvalidOpcodeException,
           InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException

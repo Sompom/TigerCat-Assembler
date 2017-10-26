@@ -1,13 +1,21 @@
 package tigercat.instruction;
 
-public class InstructionSyntaxError extends Exception
+import tigercat.AssemblerException;
+
+public class InstructionSyntaxError extends AssemblerException
 {
   private static final long serialVersionUID = 5097284501913462594L;
   
-  public String message;
-  
+  private String message;
+
   public InstructionSyntaxError(String message)
   {
     this.message = message;
+  }
+
+  @Override
+  public String getDiagnostic()
+  {
+    return getContextError() + message;
   }
 }

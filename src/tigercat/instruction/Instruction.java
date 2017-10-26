@@ -273,10 +273,7 @@ public abstract class Instruction
       throw new InstructionArgumentCountException();
     }
     
-    checkInstructionSyntax(tokens);
-
     String opcode = tokens[0];
-    String last_arg = tokens[num_args];
 
     // Add the data-width flag to the machine code
     if (opcode.endsWith("w"))
@@ -290,7 +287,10 @@ public abstract class Instruction
       throw new InvalidDataWidthException(opcode);
     }
     
+    checkInstructionSyntax(tokens);
+    
     this.opcode_encoding = opcode_encoding;
+    String last_arg = tokens[num_args];
 
     // Decide whether we are using immediate data or not
     // The only argument which can validly be immediate is the last one,
@@ -301,10 +301,6 @@ public abstract class Instruction
     } else if (last_arg.startsWith(REGISTER_PREFIX))
     {
       this.instructionType = DataType.REGISTER;
-    } else
-    {
-      // TODO: Handle label lookup
-      throw new InstructionSyntaxError("Undefined prefix on " + last_arg);
     }
     
     // All but the last argument are certainly registers
@@ -321,17 +317,20 @@ public abstract class Instruction
    * Checks a given instruction against design invariants, throwing an exception if the
    * requirements are not met
    *
+   * More syntax checking ought to be moved into this function
+   *
    * @param tokens The instruction to check
    * @throws InstructionSyntaxError Triggers if an immediate was found where we weren't expecting one
    * or a token we could not classify was found.
    */
-  //todo: move into instruction constructor
   protected static void checkInstructionSyntax(String[] tokens)
       throws InstructionSyntaxError
   {
+    // Opcode broken out for clairity
+    @SuppressWarnings("unused")
     String opcode = tokens[0];
     
-    // Check that the remaining arguments are either:
+    // Check that arguments are either:
     //   A register
     //   An immediate and the last argument
     for (int index = 1; index < tokens.length; index ++)
@@ -354,8 +353,6 @@ public abstract class Instruction
           throw new InstructionSyntaxError("Immediate encountered at non-end-of-line");
         }
       }
-      
-      // TODO: Handle label lookup
       throw new InstructionSyntaxError("Invalid token encountered: " + tokens[index]);
     }
   }

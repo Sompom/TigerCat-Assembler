@@ -121,6 +121,13 @@ public class Assembler
           // Remove colon
           labelName = labelName.substring(0, labelName.length() - 1);
           
+          if (labelMapping.containsKey(labelName))
+          {
+            throw new DoubleDefinedLabelException(labelName);
+          }
+          
+          Label toStore;
+          
           // For simplicity, this assembler requires labels be on their own line
           if (!(line.matches("^\\s*[A-Z]+:\\s$")))
           {
@@ -143,9 +150,10 @@ public class Assembler
           } else
           {
             // If not a data label, this is an address label
-            Label toStore = new Label(labelName, offsetAddress);
-            labelMapping.put(labelName, toStore);
+            toStore = new Label(labelName, offsetAddress);
           }
+          
+          labelMapping.put(labelName, toStore);
           continue;
         }
         
@@ -190,6 +198,13 @@ public class Assembler
       System.err.println("Error on line " +  (lineIndex + 1));
       System.err.println(lines[lineIndex]);
       System.err.println("Invalid data width on opcode: " + e.opcode);
+      System.exit(1);
+    } catch (DoubleDefinedLabelException e)
+    {
+      e.printStackTrace();
+      System.err.println("Error on line " +  (lineIndex + 1));
+      System.err.println(lines[lineIndex]);
+      System.err.println("Label " + e.label + " has already been declared");
       System.exit(1);
     }
     

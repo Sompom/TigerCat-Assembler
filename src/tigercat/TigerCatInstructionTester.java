@@ -1,5 +1,8 @@
 package tigercat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -104,6 +107,32 @@ public class TigerCatInstructionTester
   {
     Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", true);
     Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", true).getMachineCode(), toCheck.getMachineCode());
+  }
+  
+  @Test
+  public void testGetMOVDMachineCodeImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
+  {
+    Instruction toCheck = Instruction.createInstruction("movd %ret1 $0xFEDCBA98", true);
+    Instruction child1 = Instruction.createInstruction("addw %r1l %zero $0xBA98", true);
+    Instruction child2 = Instruction.createInstruction("addw %r1h %zero $0xFEDC", true);
+    
+    ArrayList<Byte> expected = new ArrayList<Byte>();
+    expected.addAll(Arrays.asList(child1.getMachineCode()));
+    expected.addAll(Arrays.asList(child2.getMachineCode()));
+    
+    Assert.assertArrayEquals(expected.toArray(), toCheck.getMachineCode());
+  }
+  
+  @Test
+  public void testGetMOVDMachineCodeRegister() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
+  {
+    Instruction toCheck = Instruction.createInstruction("movd %ret1 %arg1", true);
+    Instruction child1 = Instruction.createInstruction("addd %ret1 %arg1 $0x0", true);
+    
+    ArrayList<Byte> expected = new ArrayList<Byte>();
+    expected.addAll(Arrays.asList(child1.getMachineCode()));
+    
+    Assert.assertArrayEquals(expected.toArray(), toCheck.getMachineCode());
   }
   
   @Test

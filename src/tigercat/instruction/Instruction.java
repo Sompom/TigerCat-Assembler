@@ -464,6 +464,8 @@ public abstract class Instruction
           return 0x2;
         case "a2l":
           return 0x3;
+        case "r1h":
+          return 0x8;
         case "a1h":
           return 0xA;
         default:

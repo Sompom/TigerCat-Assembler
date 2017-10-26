@@ -15,7 +15,7 @@ public class AddInstruction extends Instruction
   {
     super(tokens, encodingValid, ADD_ENCODING, THREE_ARGUMENTS);
     
-    if (tokens[0].startsWith("addc"))
+    if (tokens[0].matches("^addc.$"))
     {
       opcode_encoding = ADDC_ENCODING;
     }

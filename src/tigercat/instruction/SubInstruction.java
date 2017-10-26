@@ -15,7 +15,7 @@ public class SubInstruction extends Instruction
   {
     super(tokens, encodingValid, SUB_ENCODING, THREE_ARGUMENTS);
     
-    if (tokens[0].startsWith("subc"))
+    if (tokens[0].matches("^subc.$"))
     {
       opcode_encoding = SUBC_ENCODING;
     }

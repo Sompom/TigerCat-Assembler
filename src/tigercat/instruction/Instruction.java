@@ -231,15 +231,23 @@ public abstract class Instruction
     String[] tokens = line.split("\\s+");
     String opcode = tokens[0];
     
-    if (opcode.startsWith("add"))
+    if (opcode.matches("^add.$"))
     {
       return new AddInstruction(tokens, encodingValid);
     }
-    if (opcode.startsWith("sub"))
+    if (opcode.matches("^addc.$"))
+    {
+      return new AddInstruction(tokens, encodingValid);
+    }
+    if (opcode.matches("^sub.$"))
     {
       return new SubInstruction(tokens, encodingValid);
     }
-    if (opcode.startsWith("mov"))
+    if (opcode.matches("^subc.$"))
+    {
+      return new SubInstruction(tokens, encodingValid);
+    }
+    if (opcode.matches("^mov.$"))
     {
       return new MoveInstruction(tokens, encodingValid);
     }

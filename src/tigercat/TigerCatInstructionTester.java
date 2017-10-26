@@ -39,13 +39,15 @@ public class TigerCatInstructionTester
   @Test
   public void testCreateInstructionNoMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", false);
+    Instruction.createInstruction("addd %arg1 %arg1 %arg1", false);
+    // Not throwing an exception indicates success
   }
 
   @Test
   public void testCreateInstructionWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
   {
-    Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
+    Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
+    // Not throwing an exception indicates success
   }
 
   @Test

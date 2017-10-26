@@ -7,9 +7,6 @@
 
 package tigercat.instruction;
 
-import java.util.HashMap;
-
-import tigercat.Label;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -340,7 +337,7 @@ public abstract class Instruction
   protected static void checkInstructionSyntax(String[] tokens)
       throws InstructionSyntaxError
   {
-    // Opcode broken out for clairity
+    // Opcode broken out for clarity
     @SuppressWarnings("unused")
     String opcode = tokens[0];
     

@@ -1,6 +1,7 @@
 package tigercat.instruction;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import tigercat.instruction.Register.HalfReg;
 
 public class MoveInstruction extends Instruction
 {
@@ -58,10 +59,37 @@ public class MoveInstruction extends Instruction
     }
     else if (this.dataWidth == DataWidth.DOUBLE_WORD)
     {
-      childInstructions = new Instruction[2];
-      // Decompose to two movw instructions
-      // TODO: Handle double-word move
-      throw new NotImplementedException();
+      if (this.instructionType == DataType.REGISTER)
+      {
+        // Encode moving register to register by adding immediate 0x0
+        childInstructions = new Instruction[1];
+        String child = "addd " + tokens[1] + " " + tokens[2] + " " +  Instruction.IMMEDIATE_PREFIX + "0x0";
+        childInstructions[0] = Instruction.createInstruction(child, encodingValid);
+      } else if (this.instructionType == DataType.IMMEDIATE)
+      {
+        // Decompose to two movw instructions
+        childInstructions = new Instruction[2];
+        Argument immediateArg = new Argument(tokens[2].substring(IMMEDIATE_PREFIX.length()), DataWidth.DOUBLE_WORD, DataType.IMMEDIATE);
+        
+        int immediate = immediateArg.getMachineCodeRepresentation();
+        
+        int lowerImmediate = immediate & 0xFFFF;
+        int upperImmediate = (immediate & ~0xFFFF) >> 16; 
+        
+        // For the strip the leading prefix character from the destination register
+        String dest = tokens[1].substring(REGISTER_PREFIX.length());
+        
+        String child1 = "movw " + REGISTER_PREFIX + Register.ConvertDoubleRegNameToSingleReg(dest, HalfReg.LOWER_HALF_REG)
+                        + " " + IMMEDIATE_PREFIX + "0x" + Integer.toString(lowerImmediate, 16);
+        String child2 = "movw " + REGISTER_PREFIX + Register.ConvertDoubleRegNameToSingleReg(dest, HalfReg.UPPER_HALF_REG)
+            + " " + IMMEDIATE_PREFIX + "0x" + Integer.toString(upperImmediate, 16);
+
+        childInstructions[0] = Instruction.createInstruction(child1, encodingValid);
+        childInstructions[1] = Instruction.createInstruction(child2, encodingValid);
+      } else
+      {
+        assert false : "Invalid Instruction Type";
+      }
     } else
     {
       assert false : "Undefined dataWidth";

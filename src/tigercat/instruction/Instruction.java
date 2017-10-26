@@ -7,6 +7,7 @@
 
 package tigercat.instruction;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -291,14 +292,11 @@ public abstract class Instruction
       throw new InvalidDataWidthException(opcode);
     }
     
-    // If the encoding is not valid, label values have not been set yet, meaning
-    // we should not continue to generate machine code
-    if (!(encodingValid))
+    if (encodingValid)
     {
-      return;
+      // The syntax checker requires labels to be replaced with values
+      checkInstructionSyntax(tokens);
     }
-    
-    checkInstructionSyntax(tokens);
     
     this.opcode_encoding = opcode_encoding;
     String last_arg = tokens[num_args];
@@ -312,7 +310,24 @@ public abstract class Instruction
     } else if (last_arg.startsWith(REGISTER_PREFIX))
     {
       this.instructionType = DataType.REGISTER;
+    } else if (last_arg.matches("^[A-Z]+$))"))
+    {
+      // Might be a label. Assume Immediate
+      this.instructionType = DataType.IMMEDIATE;
+    } else
+    {
+      // Too tired to figure this out right now.
+      // Basic idea is it is not a register, not an immediate, and isn't all caps (not a label)
+      throw new NotImplementedException();
     }
+    
+    // If the encoding is not valid, label values have not been set yet, meaning
+    // we should not continue to generate machine code
+    if (!(encodingValid))
+    {
+      return;
+    }
+    
     
     // All but the last argument are certainly registers
     for (int index = 0; index < num_args - 1; index++)

@@ -284,6 +284,13 @@ public abstract class Instruction
       throw new InvalidDataWidthException(opcode);
     }
     
+    // If the encoding is not valid, label values have not been set yet, meaning
+    // we should not continue to generate machine code
+    if (!(encodingValid))
+    {
+      return;
+    }
+    
     checkInstructionSyntax(tokens);
     
     this.opcode_encoding = opcode_encoding;

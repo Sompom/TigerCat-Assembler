@@ -22,6 +22,7 @@ import tigercat.instruction.InstructionSyntaxError;
 import tigercat.instruction.InvalidDataWidthException;
 import tigercat.instruction.InvalidOpcodeException;
 import tigercat.instruction.InvalidRegisterException;
+import tigercat.instruction.UnencodeableImmediateException;
 
 public class Assembler
 {
@@ -93,6 +94,10 @@ public class Assembler
       e.printStackTrace();
       System.err.println("Undefined label: "+ e.label);
       System.exit(1);
+    } catch (UnencodeableImmediateException e)
+    {
+      e.printStackTrace();
+      System.err.print(e.message + ": " + Integer.toHexString(e.immediateValue));
     }
 
     return machineCode;
@@ -190,7 +195,7 @@ public class Assembler
   
   protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping)
           throws UndefinedLabelException, InstructionArgumentCountException, InvalidOpcodeException,
-          InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
+          InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
     ArrayList<Byte> machineCode = new ArrayList<Byte>();
     

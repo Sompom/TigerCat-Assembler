@@ -22,7 +22,7 @@ public class MoveInstruction extends Instruction
   }
   
   @Override
-  public Byte[] getMachineCode()
+  public Byte[] getMachineCode() throws UnencodeableImmediateException
   {
     Byte[] toReturn = new Byte[this.getSize() * SIZEOF_WORD / SIZEOF_BYTE];
     int current_pointer;

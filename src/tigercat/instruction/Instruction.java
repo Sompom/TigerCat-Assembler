@@ -103,8 +103,9 @@ public abstract class Instruction
    * All other portions filled in based on local variables!
    * 
    * @return Machine code representation of this instruction
+   * @throws UnencodeableImmediateException If the immediate is determined to be unencodable
    */
-  public Byte[] getMachineCode()
+  public Byte[] getMachineCode() throws UnencodeableImmediateException
   {
     assert arguments != null : "Instruction defined with no labelMapping. Cannot get machine code.";
     int index;
@@ -120,6 +121,7 @@ public abstract class Instruction
     // Loop over all the register arguments and encode them
     for (index = 0; index < arguments.length - 1; index ++)
     {
+      // All but the last argument must be registers
       assert arguments[index].getArgumentType() == DataType.REGISTER : "Expected register argument";
       
       shiftDistance -= arguments[index].getEncodingSize();
@@ -134,8 +136,40 @@ public abstract class Instruction
       this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
       break;
     case IMMEDIATE:
-      // TODO: Handle encoding immediate value
-      assert false : "Encoding immediates not implemented";
+      // To encode an immediate value:
+      // 1. Check if the immediate is too large to be encoded with the bits remaining.
+      // 2. If the instruction uses single-word data, check for an immediate larger than
+      //    16 bits
+      // Throw an UnencodeableImmediateException if either above case is true
+      // 3. bitwise or the immediate into place
+
+      int immediateValue = arguments[index].machineCodeRepresentation;
+      
+      // Create a mask with ones for all the bits we have already used
+      // Conveniently, shiftDistance is the number of bits we have left
+      int mask = ~((int)Math.pow(2, shiftDistance) - 1);
+      
+      // AND the mask with the immediate to encode
+      // If the result is non-zero, the immediate is too large
+      if (!((immediateValue & mask) == 0))
+      {
+        throw new UnencodeableImmediateException("Immediate too large to be encoded", immediateValue); 
+      }
+      
+      if (this.dataWidth == DataWidth.SINGLE_WORD)
+      {
+        // If this is a single-word instruction
+        // Create a mask with ones in the high 16-bits and zeros in the low 16-bits
+        // As above, AND the mask with the immediate. If the result is non-zero, the immediate is too large 
+        mask = ~0xFFFF;
+        if (!((immediateValue & mask) == 0))
+        {
+          throw new UnencodeableImmediateException("Immediate too large for single-word instruction", immediateValue); 
+        }
+      }
+      
+      // This immediate has passed the checks, so should be valid to encode
+      this.machineCode |= immediateValue;
       break;
     }
     

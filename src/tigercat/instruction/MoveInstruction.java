@@ -1,10 +1,6 @@
 package tigercat.instruction;
 
-import java.util.HashMap;
-
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import tigercat.Assembler;
-import tigercat.Label;
 
 public class MoveInstruction extends Instruction
 {

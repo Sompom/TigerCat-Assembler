@@ -1,9 +1,5 @@
 package tigercat.instruction;
 
-import java.util.HashMap;
-
-import tigercat.Label;
-
 public class SubInstruction extends Instruction
 {
   static final int SUB_ENCODING = 0x02;

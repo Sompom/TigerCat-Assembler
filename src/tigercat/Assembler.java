@@ -9,11 +9,7 @@ package tigercat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Scanner;
-
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tigercat.instruction.Instruction;

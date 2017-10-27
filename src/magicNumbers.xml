@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <lookup>
-    <register_numbers>
+    <register-numbers>
         <register name="r1l">0x0</register>
         <register name="r2l">0x1</register>
         <register name="a1l">0x2</register>
@@ -18,5 +18,5 @@
         <register name="a4h">0xD</register>
         <register name="s1h">0xE</register>
         <register name="s2h">0xF</register>
-    </register_numbers>
+    </register-numbers>
 </lookup>

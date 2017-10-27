@@ -7,7 +7,18 @@
 
 package tigercat.instruction;
 
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+
+import java.io.IOException;
+
+import static java.lang.System.exit;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -46,6 +57,9 @@ public abstract class Instruction
   // What tokens the assembly expects
   public static final String REGISTER_PREFIX = "%";
   public static final String IMMEDIATE_PREFIX = "$";
+
+  // The XML lookup file uri
+  public static final String  LOOKUP_FILE_URI = "magicNumbers.xml";
 
   /**
    * Record whether an instruction operates on single-word or double-word data
@@ -399,6 +413,31 @@ public abstract class Instruction
     public int getMachineCodeRepresentation()
     {
       return machineCodeRepresentation;
+    }
+
+    protected int getRegisterCode(String registerName) throws xmlLookupException {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder builder = null;
+      Document doc;
+
+      try {
+        builder = factory.newDocumentBuilder();
+        doc = builder.parse(LOOKUP_FILE_URI);
+      } catch (ParserConfigurationException | SAXException | IOException e) {
+        throw new xmlLookupException("XML file not found: " + LOOKUP_FILE_URI + ".");
+      }
+
+      XPathFactory xPathfactory = XPathFactory.newInstance();
+      XPath xpath = xPathfactory.newXPath();
+
+      String protoExpr = String.format("/lookup/register-numbers/register[@name='%s']", registerName);
+
+      try {
+        XPathExpression expr = xpath.compile(protoExpr);
+        return (int) expr.evaluate(doc, XPathConstants.NUMBER); //trust me on the cast
+      } catch (XPathExpressionException e) {
+        throw new xmlLookupException("XML lookup of register: " + registerName + " failed.");
+      }
     }
     
     /**

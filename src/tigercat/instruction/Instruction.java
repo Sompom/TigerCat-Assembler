@@ -7,9 +7,7 @@
 
 package tigercat.instruction;
 
-import java.util.HashMap;
-
-import tigercat.Label;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -103,8 +101,9 @@ public abstract class Instruction
    * All other portions filled in based on local variables!
    * 
    * @return Machine code representation of this instruction
+   * @throws UnencodeableImmediateException If the immediate is determined to be unencodable
    */
-  public Byte[] getMachineCode()
+  public Byte[] getMachineCode() throws UnencodeableImmediateException
   {
     assert arguments != null : "Instruction defined with no labelMapping. Cannot get machine code.";
     int index;
@@ -120,10 +119,11 @@ public abstract class Instruction
     // Loop over all the register arguments and encode them
     for (index = 0; index < arguments.length - 1; index ++)
     {
+      // All but the last argument must be registers
       assert arguments[index].getArgumentType() == DataType.REGISTER : "Expected register argument";
       
       shiftDistance -= arguments[index].getEncodingSize();
-      this.machineCode |= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
+      this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
     }
     
     switch(arguments[index].argumentType)
@@ -131,11 +131,43 @@ public abstract class Instruction
     case REGISTER:
       // Shift in the register, as normal
       shiftDistance -= arguments[index].getEncodingSize();
-      this.machineCode |= arguments[index].getMachineCodeRepresentation()[0] << shiftDistance;
+      this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
       break;
     case IMMEDIATE:
-      // TODO: Handle encoding immediate value
-      assert false : "Encoding immediates not implemented";
+      // To encode an immediate value:
+      // 1. Check if the immediate is too large to be encoded with the bits remaining.
+      // 2. If the instruction uses single-word data, check for an immediate larger than
+      //    16 bits
+      // Throw an UnencodeableImmediateException if either above case is true
+      // 3. bitwise or the immediate into place
+
+      int immediateValue = arguments[index].machineCodeRepresentation;
+      
+      // Create a mask with ones for all the bits we have already used
+      // Conveniently, shiftDistance is the number of bits we have left
+      int mask = ~((int)Math.pow(2, shiftDistance) - 1);
+      
+      // AND the mask with the immediate to encode
+      // If the result is non-zero, the immediate is too large
+      if (!((immediateValue & mask) == 0))
+      {
+        throw new UnencodeableImmediateException("Immediate too large to be encoded", immediateValue); 
+      }
+      
+      if (this.dataWidth == DataWidth.SINGLE_WORD)
+      {
+        // If this is a single-word instruction
+        // Create a mask with ones in the high 16-bits and zeros in the low 16-bits
+        // As above, AND the mask with the immediate. If the result is non-zero, the immediate is too large 
+        mask = ~0xFFFF;
+        if (!((immediateValue & mask) == 0))
+        {
+          throw new UnencodeableImmediateException("Immediate too large for single-word instruction", immediateValue); 
+        }
+      }
+      
+      // This immediate has passed the checks, so should be valid to encode
+      this.machineCode |= immediateValue;
       break;
     }
     
@@ -147,7 +179,7 @@ public abstract class Instruction
    * form to a byte array for use in the assembled program.
    *
    * @param input The number to convert to bytes
-   * @return A little-endian byte-array representation of the number //todo: verify
+   * @return A little-endian byte-array representation of the number
    */
   public static Byte[] convertIntToByteArray(int input)
   {
@@ -179,6 +211,7 @@ public abstract class Instruction
    * Converts the given line of assembly into an Instruction object
    * 
    * @param line Line of assembly which corresponds to a machine instruction
+   * @param encodingValid Whether labels have been replaced yet
    * @return The newly-created instruction
    * @throws InvalidRegisterException 
    * @throws InstructionSyntaxError 
@@ -186,7 +219,7 @@ public abstract class Instruction
    * @throws InstructionArgumentCountException 
    * @throws InvalidDataWidthException 
    */
-  public static Instruction createInstruction(String line, HashMap<String, Label> labelMapping)
+  public static Instruction createInstruction(String line, boolean encodingValid)
       throws InstructionArgumentCountException,
       InvalidOpcodeException,
       InstructionSyntaxError,
@@ -196,17 +229,25 @@ public abstract class Instruction
     String[] tokens = line.split("\\s+");
     String opcode = tokens[0];
     
-    if (opcode.startsWith("add"))
+    if (opcode.matches("^add.$"))
     {
-      return new AddInstruction(tokens, labelMapping);
+      return new AddInstruction(tokens, encodingValid);
     }
-    if (opcode.startsWith("sub"))
+    if (opcode.matches("^addc.$"))
     {
-      return new SubInstruction(tokens, labelMapping);
+      return new AddInstruction(tokens, encodingValid);
     }
-    if (opcode.startsWith("mov"))
+    if (opcode.matches("^sub.$"))
     {
-      return new MoveInstruction(tokens, labelMapping);
+      return new SubInstruction(tokens, encodingValid);
+    }
+    if (opcode.matches("^subc.$"))
+    {
+      return new SubInstruction(tokens, encodingValid);
+    }
+    if (opcode.matches("^mov.$"))
+    {
+      return new MoveInstruction(tokens, encodingValid);
     }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
@@ -215,34 +256,29 @@ public abstract class Instruction
   /**
    * Create an Instruction from the given string
    * 
-   * An Instruction may be created with null labelMapping, in which case only getSize() is defined
-   * 
-   * If labelMapping is defined, this function must instantiate in all class-level variables and
-   * the top five bits of the top byte of machineCode should be set to the opcode
+   * If encodingValid is false, getMachineCode() is undefined
    * 
    * @param tokens The instruction to create
-   * @param labelMapping Resolve labels to addresses
+   * @param encodingValid Whether the passed token[] should be convertible to machine code
+   *                      (I.e., whether labels have been replaced
    * @throws InvalidDataWidthException If the instruction specifies an unrecognized data width
    * @throws InstructionSyntaxError 
    * @throws InstructionArgumentCountException 
    * @throws InvalidOpcodeException 
    * @throws InvalidRegisterException 
    */
-  protected Instruction(String[] tokens, HashMap<String, Label> labelMapping, int opcode_encoding, int num_args)
+  protected Instruction(String[] tokens, boolean encodingValid, int opcode_encoding, int num_args)
       throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException, InvalidOpcodeException, InvalidRegisterException
   {
     this.machineCode = 0;
     this.arguments = new Argument[num_args];
     
-    if (tokens.length < num_args + 1)
+    if (tokens.length != num_args + 1)
     {
-      throw new InstructionArgumentCountException();
+      throw new InstructionArgumentCountException(num_args, tokens.length - 1);
     }
     
-    checkInstructionSyntax(tokens);
-
     String opcode = tokens[0];
-    String last_arg = tokens[num_args];
 
     // Add the data-width flag to the machine code
     if (opcode.endsWith("w"))
@@ -256,7 +292,14 @@ public abstract class Instruction
       throw new InvalidDataWidthException(opcode);
     }
     
+    if (encodingValid)
+    {
+      // The syntax checker requires labels to be replaced with values
+      checkInstructionSyntax(tokens);
+    }
+    
     this.opcode_encoding = opcode_encoding;
+    String last_arg = tokens[num_args];
 
     // Decide whether we are using immediate data or not
     // The only argument which can validly be immediate is the last one,
@@ -267,11 +310,24 @@ public abstract class Instruction
     } else if (last_arg.startsWith(REGISTER_PREFIX))
     {
       this.instructionType = DataType.REGISTER;
+    } else if (last_arg.matches("^[A-Z]+$))"))
+    {
+      // Might be a label. Assume Immediate
+      this.instructionType = DataType.IMMEDIATE;
     } else
     {
-      // TODO: Handle label lookup
-      throw new InstructionSyntaxError("Undefined prefix on " + last_arg);
+      // Too tired to figure this out right now.
+      // Basic idea is it is not a register, not an immediate, and isn't all caps (not a label)
+      throw new NotImplementedException();
     }
+    
+    // If the encoding is not valid, label values have not been set yet, meaning
+    // we should not continue to generate machine code
+    if (!(encodingValid))
+    {
+      return;
+    }
+    
     
     // All but the last argument are certainly registers
     for (int index = 0; index < num_args - 1; index++)
@@ -287,17 +343,20 @@ public abstract class Instruction
    * Checks a given instruction against design invariants, throwing an exception if the
    * requirements are not met
    *
+   * More syntax checking ought to be moved into this function
+   *
    * @param tokens The instruction to check
    * @throws InstructionSyntaxError Triggers if an immediate was found where we weren't expecting one
    * or a token we could not classify was found.
    */
-  //todo: move into instruction constructor
   protected static void checkInstructionSyntax(String[] tokens)
       throws InstructionSyntaxError
   {
+    // Opcode broken out for clarity
+    @SuppressWarnings("unused")
     String opcode = tokens[0];
     
-    // Check that the remaining arguments are either:
+    // Check that arguments are either:
     //   A register
     //   An immediate and the last argument
     for (int index = 1; index < tokens.length; index ++)
@@ -320,8 +379,6 @@ public abstract class Instruction
           throw new InstructionSyntaxError("Immediate encountered at non-end-of-line");
         }
       }
-      
-      // TODO: Handle label lookup
       throw new InstructionSyntaxError("Invalid token encountered: " + tokens[index]);
     }
   }
@@ -330,7 +387,7 @@ public abstract class Instruction
   {
     protected static final String ZERO_REG = "zero";
     
-    protected Byte[] machineCodeRepresentation;
+    protected int machineCodeRepresentation;
     protected DataType argumentType;
     protected int size;
     
@@ -339,7 +396,7 @@ public abstract class Instruction
       return argumentType;
     }
     
-    public Byte[] getMachineCodeRepresentation()
+    public int getMachineCodeRepresentation()
     {
       return machineCodeRepresentation;
     }
@@ -391,20 +448,26 @@ public abstract class Instruction
      * @throws InvalidRegisterException
      *           If an undefined register is encountered
      */
-    protected Byte[] parseRegister(String argument, DataWidth dataWidth) throws InvalidRegisterException
+    protected int parseRegister(String argument, DataWidth dataWidth) throws InvalidRegisterException
     {
       if (dataWidth == DataWidth.SINGLE_WORD)
       {
         switch (argument)
         {
-        case Argument.ZERO_REG: //todo: magic numbers are evil (put this into a lookup xml file)
-          return new Byte[] { 0x7 };
+        case Argument.ZERO_REG: //TODO: magic numbers are evil (put this into a lookup xml file)
+          return 0xF;
         case "r1l":
-          return new Byte[] { 0x0 };
+          return 0x0;
         case "r2l":
-          return new Byte[] { 0x1 };
+          return 0x1;
         case "a1l":
-          return new Byte[] { 0x2 };
+          return 0x2;
+        case "a2l":
+          return 0x3;
+        case "r1h":
+          return 0x8;
+        case "a1h":
+          return 0xA;
         default:
           throw new InvalidRegisterException(argument);
         }
@@ -413,11 +476,11 @@ public abstract class Instruction
         switch (argument)
         {
         case "ret1":
-          return new Byte[] { 0x0 };
+          return 0x0;
         case "ret2":
-          return new Byte[] { 0x1 };
+          return 0x1;
         case "arg1":
-          return new Byte[] { 0x2 };
+          return 0x2;
         default:
           throw new InvalidRegisterException(argument);
         }
@@ -435,11 +498,11 @@ public abstract class Instruction
      *          A string containing a hexadecimal immediate value, including 0x prefix
      * @return Machine Code representation of the immediate value
      */
-    protected Byte[] parseImmediate(String argument)
+    protected int parseImmediate(String argument)
     {
       // Strip 0x prefix
       argument = argument.substring(2);
-      return convertIntToByteArray(Integer.parseInt(argument, 16));
+      return Integer.parseUnsignedInt(argument, 16);
     }
   }
 }

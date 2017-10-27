@@ -1,10 +1,7 @@
 package tigercat.instruction;
 
-import java.util.HashMap;
-
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import tigercat.Assembler;
-import tigercat.Label;
+import tigercat.instruction.Register.HalfReg;
 
 public class MoveInstruction extends Instruction
 {
@@ -22,7 +19,7 @@ public class MoveInstruction extends Instruction
   }
   
   @Override
-  public Byte[] getMachineCode()
+  public Byte[] getMachineCode() throws UnencodeableImmediateException
   {
     Byte[] toReturn = new Byte[this.getSize() * SIZEOF_WORD / SIZEOF_BYTE];
     int current_pointer;
@@ -46,26 +43,56 @@ public class MoveInstruction extends Instruction
     return toReturn;
   }
 
-  public MoveInstruction(String[] tokens, HashMap<String, Label> labelMapping)
+  public MoveInstruction(String[] tokens, boolean encodingValid)
       throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException,
       InvalidOpcodeException, InvalidRegisterException
   {
     // TODO: Top-level pseudo-instruction (dummy) constructor
-    super(tokens, labelMapping, 0x00, TWO_ARGUMENTS);
+    super(tokens, encodingValid, 0x00, TWO_ARGUMENTS);
     
     if (this.dataWidth == DataWidth.SINGLE_WORD)
     {
       childInstructions = new Instruction[1];
       // Construct the pseudo instruction by adding the mov argument to zero and storing into the mov destination 
       String child = "addw " + tokens[1] + " " + Instruction.REGISTER_PREFIX + Argument.ZERO_REG + " " + tokens[2]; 
-      childInstructions[0] = Instruction.createInstruction(child, labelMapping);
+      childInstructions[0] = Instruction.createInstruction(child, encodingValid);
     }
     else if (this.dataWidth == DataWidth.DOUBLE_WORD)
     {
-      childInstructions = new Instruction[2];
-      // Decompose to two movw instructions
-      // TODO: Handle double-word move
-      throw new NotImplementedException();
+      if (this.instructionType == DataType.REGISTER)
+      {
+        // Encode moving register to register by adding immediate 0x0
+        childInstructions = new Instruction[1];
+        String child = "addd " + tokens[1] + " " + tokens[2] + " " +  Instruction.IMMEDIATE_PREFIX + "0x0";
+        childInstructions[0] = Instruction.createInstruction(child, encodingValid);
+      } else if (this.instructionType == DataType.IMMEDIATE)
+      {
+        // Decompose to two movw instructions
+        childInstructions = new Instruction[2];
+        Argument immediateArg = new Argument(tokens[2].substring(IMMEDIATE_PREFIX.length()), DataWidth.DOUBLE_WORD, DataType.IMMEDIATE);
+        
+        int immediate = immediateArg.getMachineCodeRepresentation();
+        
+        int lowerImmediate = immediate & 0xFFFF;
+        int upperImmediate = (immediate & ~0xFFFF) >>> 16; 
+        
+        // For the strip the leading prefix character from the destination register
+        String dest = tokens[1].substring(REGISTER_PREFIX.length());
+        
+        String child1 = "movw " + REGISTER_PREFIX + Register.ConvertDoubleRegNameToSingleReg(dest, HalfReg.LOWER_HALF_REG)
+                        + " " + IMMEDIATE_PREFIX + "0x" + Integer.toUnsignedString(lowerImmediate, 16);
+        String child2 = "movw " + REGISTER_PREFIX + Register.ConvertDoubleRegNameToSingleReg(dest, HalfReg.UPPER_HALF_REG)
+            + " " + IMMEDIATE_PREFIX + "0x" + Integer.toUnsignedString(upperImmediate, 16);
+
+        childInstructions[0] = Instruction.createInstruction(child1, encodingValid);
+        childInstructions[1] = Instruction.createInstruction(child2, encodingValid);
+      } else
+      {
+        assert false : "Invalid Instruction Type";
+      }
+    } else
+    {
+      assert false : "Undefined dataWidth";
     }
   }
 

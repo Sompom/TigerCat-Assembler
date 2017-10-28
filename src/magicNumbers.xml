@@ -2,21 +2,30 @@
 
 <lookup>
     <register-numbers>
-        <register name="r1l">0x0</register>
-        <register name="r2l">0x1</register>
-        <register name="a1l">0x2</register>
-        <register name="a2l">0x3</register>
-        <register name="a3l">0x4</register>
-        <register name="a4l">0x5</register>
-        <register name="s1l">0x6</register>
-        <register name="s1l">0x7</register>
-        <register name="r1h">0x8</register>
-        <register name="r2h">0x9</register>
-        <register name="a1h">0xA</register>
-        <register name="a2h">0xB</register>
-        <register name="a3h">0xC</register>
-        <register name="a4h">0xD</register>
-        <register name="s1h">0xE</register>
-        <register name="s2h">0xF</register>
-    </register-numbers>
+        <register data_width="single" name="r1l">0x0</register>
+        <register data_width="single" name="r2l">0x1</register>
+        <register data_width="single" name="a1l">0x2</register>
+        <register data_width="single" name="a2l">0x3</register>
+        <register data_width="single" name="a3l">0x4</register>
+        <register data_width="single" name="a4l">0x5</register>
+        <register data_width="single" name="s1l">0x6</register>
+        <register data_width="single" name="rand">0x7</register>
+        <register data_width="single" name="r1h">0x8</register>
+        <register data_width="single" name="r2h">0x9</register>
+        <register data_width="single" name="a1h">0xA</register>
+        <register data_width="single" name="a2h">0xB</register>
+        <register data_width="single" name="a3h">0xC</register>
+        <register data_width="single" name="a4h">0xD</register>
+        <register data_width="single" name="s1h">0xE</register>
+        <register data_width="single" name="zero">0xF</register>
+
+        <register data_width="double" name="ret1">0x0</register>
+        <register data_width="double" name="ret2">0x1</register>
+        <register data_width="double" name="arg1">0x2</register>
+        <register data_width="double" name="arg2">0x3</register>
+        <register data_width="double" name="arg3">0x4</register>
+        <register data_width="double" name="arg4">0x5</register>
+        <register data_width="double" name="SP">0x6</register>
+        <register data_width="double" name="IP">0x7</register>
+    </register-numbers>1
 </lookup>

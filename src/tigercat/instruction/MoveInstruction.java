@@ -44,9 +44,8 @@ public class MoveInstruction extends Instruction
   }
 
   public MoveInstruction(String[] tokens, boolean encodingValid)
-      throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException,
-      InvalidOpcodeException, InvalidRegisterException
-  {
+          throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException,
+          InvalidOpcodeException, InvalidRegisterException, XmlLookupException {
     // TODO: Top-level pseudo-instruction (dummy) constructor
     super(tokens, encodingValid, 0x00, TWO_ARGUMENTS);
     

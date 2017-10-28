@@ -7,7 +7,18 @@
 
 package tigercat.instruction;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+
+import java.io.IOException;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -46,6 +57,10 @@ public abstract class Instruction
   // What tokens the assembly expects
   public static final String REGISTER_PREFIX = "%";
   public static final String IMMEDIATE_PREFIX = "$";
+
+  // The XML lookup file uri and DOM
+  private static final String  LOOKUP_FILE_URI = "./src/magicNumbers.xml";
+  private static Document lookupDoc = null;
 
   /**
    * Record whether an instruction operates on single-word or double-word data
@@ -220,12 +235,11 @@ public abstract class Instruction
    * @throws InvalidDataWidthException 
    */
   public static Instruction createInstruction(String line, boolean encodingValid)
-      throws InstructionArgumentCountException,
-      InvalidOpcodeException,
-      InstructionSyntaxError,
-      InvalidRegisterException,
-      InvalidDataWidthException
-  {
+          throws InstructionArgumentCountException,
+          InvalidOpcodeException,
+          InstructionSyntaxError,
+          InvalidRegisterException,
+          InvalidDataWidthException, XmlLookupException {
     String[] tokens = line.split("\\s+");
     String opcode = tokens[0];
     
@@ -268,8 +282,8 @@ public abstract class Instruction
    * @throws InvalidRegisterException 
    */
   protected Instruction(String[] tokens, boolean encodingValid, int opcode_encoding, int num_args)
-      throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException, InvalidOpcodeException, InvalidRegisterException
-  {
+          throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException,
+          InvalidOpcodeException, InvalidRegisterException, XmlLookupException {
     this.machineCode = 0;
     this.arguments = new Argument[num_args];
     
@@ -310,7 +324,7 @@ public abstract class Instruction
     } else if (last_arg.startsWith(REGISTER_PREFIX))
     {
       this.instructionType = DataType.REGISTER;
-    } else if (last_arg.matches("^[A-Z]+$))"))
+    } else if (last_arg.matches("^[A-Z]+$"))
     {
       // Might be a label. Assume Immediate
       this.instructionType = DataType.IMMEDIATE;
@@ -400,6 +414,50 @@ public abstract class Instruction
     {
       return machineCodeRepresentation;
     }
+
+    protected int getRegisterCode(String registerName, DataWidth dataWidth) throws XmlLookupException, InvalidRegisterException {
+      //one-time setup
+      try {
+        if(lookupDoc == null) {
+          DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+          DocumentBuilder builder = factory.newDocumentBuilder();
+          lookupDoc = builder.parse(LOOKUP_FILE_URI);
+        }
+      } catch (ParserConfigurationException | SAXException | IOException e) {
+        throw new XmlLookupException("XML file not found: " + LOOKUP_FILE_URI + ".");
+      }
+
+      //set data width
+      String widthArg;
+      if (dataWidth == DataWidth.SINGLE_WORD) {
+        widthArg = "single";
+      } else if (dataWidth == DataWidth.DOUBLE_WORD) {
+        widthArg = "double";
+      } else {
+        throw new XmlLookupException("Unrecognized datawidth argument");
+      }
+      XPathFactory xPathfactory = XPathFactory.newInstance();
+      XPath xpath = xPathfactory.newXPath();
+      String protoExpr = String.format("/lookup/register-numbers/register[@data_width='%s' and @name='%s']",
+                                       widthArg, registerName);
+
+      try {
+        XPathExpression expr = xpath.compile(protoExpr);
+        NodeList protoResult = (NodeList) expr.evaluate(lookupDoc, XPathConstants.NODESET);
+
+        //check to make sure we only found one matching register
+        if(protoResult.getLength() == 0)
+          throw new InvalidRegisterException(registerName);
+        if(protoResult.getLength() > 1)
+          throw new XmlLookupException("More than one matching register found for: " + registerName
+                                               + " (this is a bug in the assembler.");
+
+        return Integer.decode(protoResult.item(0).getTextContent());
+
+      } catch (XPathExpressionException e) {
+        throw new XmlLookupException("XML lookup of register: '" + registerName + "' failed.");
+      }
+    }
     
     /**
      * Returns the size of the encoding of this argument
@@ -412,8 +470,8 @@ public abstract class Instruction
       return size;
     }
 
-    public Argument(String argument, DataWidth dataWidth, DataType argumentType) throws InvalidRegisterException
-    {
+    public Argument(String argument, DataWidth dataWidth, DataType argumentType)
+            throws InvalidRegisterException, XmlLookupException {
       
       this.argumentType = argumentType;
       if (argumentType == DataType.IMMEDIATE)
@@ -448,42 +506,10 @@ public abstract class Instruction
      * @throws InvalidRegisterException
      *           If an undefined register is encountered
      */
-    protected int parseRegister(String argument, DataWidth dataWidth) throws InvalidRegisterException
-    {
-      if (dataWidth == DataWidth.SINGLE_WORD)
+    protected int parseRegister(String argument, DataWidth dataWidth) throws InvalidRegisterException, XmlLookupException {
+      if (dataWidth == DataWidth.SINGLE_WORD | dataWidth == DataWidth.DOUBLE_WORD)
       {
-        switch (argument)
-        {
-        case Argument.ZERO_REG: //TODO: magic numbers are evil (put this into a lookup xml file)
-          return 0xF;
-        case "r1l":
-          return 0x0;
-        case "r2l":
-          return 0x1;
-        case "a1l":
-          return 0x2;
-        case "a2l":
-          return 0x3;
-        case "r1h":
-          return 0x8;
-        case "a1h":
-          return 0xA;
-        default:
-          throw new InvalidRegisterException(argument);
-        }
-      } else if (dataWidth == DataWidth.DOUBLE_WORD)
-      {
-        switch (argument)
-        {
-        case "ret1":
-          return 0x0;
-        case "ret2":
-          return 0x1;
-        case "arg1":
-          return 0x2;
-        default:
-          throw new InvalidRegisterException(argument);
-        }
+        return getRegisterCode(argument, dataWidth);
       } else
       {
         throw new RuntimeException("Undefined Data Width");

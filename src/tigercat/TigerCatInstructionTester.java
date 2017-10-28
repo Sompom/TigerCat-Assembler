@@ -8,13 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import tigercat.instruction.Instruction;
-import tigercat.instruction.InstructionArgumentCountException;
-import tigercat.instruction.InstructionSyntaxError;
-import tigercat.instruction.InvalidDataWidthException;
-import tigercat.instruction.InvalidOpcodeException;
-import tigercat.instruction.InvalidRegisterException;
-import tigercat.instruction.UnencodeableImmediateException;
+import tigercat.instruction.*;
 
 public class TigerCatInstructionTester
 {
@@ -40,78 +34,67 @@ public class TigerCatInstructionTester
   }
 
   @Test
-  public void testCreateInstructionNoMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testCreateInstructionNoMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     Instruction.createInstruction("addd %arg1 %arg1 %arg1", false);
     // Not throwing an exception indicates success
   }
 
   @Test
-  public void testCreateInstructionWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testCreateInstructionWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
     // Not throwing an exception indicates success
   }
 
   @Test
-  public void testGetSizeNoMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testGetSizeNoMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", false);
     Assert.assertEquals((Integer)2, toCheck.getSize());
   }
 
   @Test
-  public void testGetSizeWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testGetSizeWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
     Assert.assertEquals((Integer)2, toCheck.getSize());
   }
 
   @Test
-  public void testGetMachineCodeWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetMachineCodeWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x06, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
-  public void testGetADDCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetADDCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("addcd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x0E, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
-  public void testGetADDDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetADDDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x06, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
-  public void testGetSUBCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetSUBCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("subcd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x1E, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
-  public void testGetSUBDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetSUBDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("subd %arg1 %arg1 %arg1", true);
     Assert.assertArrayEquals(new Byte[]{0x16, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
-  public void testGetMOVWMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetMOVWMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", true);
     Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", true).getMachineCode(), toCheck.getMachineCode());
   }
   
   @Test
-  public void testGetMOVDMachineCodeImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetMOVDMachineCodeImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("movd %ret1 $0xFEDCBA98", true);
     Instruction child1 = Instruction.createInstruction("addw %r1l %zero $0xBA98", true);
     Instruction child2 = Instruction.createInstruction("addw %r1h %zero $0xFEDC", true);
@@ -124,8 +107,7 @@ public class TigerCatInstructionTester
   }
   
   @Test
-  public void testGetMOVDMachineCodeRegister() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testGetMOVDMachineCodeRegister() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("movd %ret1 %arg1", true);
     Instruction child1 = Instruction.createInstruction("addd %ret1 %arg1 $0x0", true);
     
@@ -136,8 +118,7 @@ public class TigerCatInstructionTester
   }
   
   @Test
-  public void testADDWImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testADDWImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     String toTest = "addw %r1l %r1l $0x500";
     Byte[] correct = {0x00, 0x00, 0x05, 0x00};
     Instruction toCheck = Instruction.createInstruction(toTest, true);
@@ -148,20 +129,29 @@ public class TigerCatInstructionTester
   /**
    * Test that a mistyped opcode will throw an exception
    */
-  public void testInvalidOpcode1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testInvalidOpcode1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     String toTest = "adddw %r1l %r1l %r1l";
     
     exception.expect(InvalidOpcodeException.class);
     Instruction.createInstruction(toTest, false);
+  }
+
+  @Test
+  /**
+   * Test that a mistyped opcode will throw an exception
+   */
+  public void testInvalidRegWidth() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
+    String toTest = "addd %arg1 %r1l %r1l";
+
+    exception.expect(InvalidRegisterException.class);
+    Instruction.createInstruction(toTest, true);
   }
   
   @Test
   /**
    * Test that an opcode with the wrong number of arguments throws an error
    */
-  public void testArgumentCount1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testArgumentCount1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     String toTest = "movw %r1l %r1l %r1l";
     
     exception.expect(InstructionArgumentCountException.class);
@@ -172,8 +162,7 @@ public class TigerCatInstructionTester
   /**
    * Test that an instruction which uses a mistyped register throws an exception
    */
-  public void testInvalidRegister() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testInvalidRegister() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     String toTest = "movw %r1l %r5l";
     
     exception.expect(InvalidRegisterException.class);
@@ -184,8 +173,7 @@ public class TigerCatInstructionTester
   /**
    * Test that a single-word instruction which uses a too-big immediate throws an exception
    */
-  public void testUnencodeableImmediate1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testUnencodeableImmediate1() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     String toTest = "addw %r1l %a1l $0x10000";
     
     exception.expect(UnencodeableImmediateException.class);
@@ -196,8 +184,7 @@ public class TigerCatInstructionTester
   /**
    * Test that a double-word instruction which uses a too-big immediate throws an exception
    */
-  public void testUnencodeableImmediate2() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
-  {
+  public void testUnencodeableImmediate2() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     String toTest = "addd %ret1 %arg1 $0x80000";
     
     exception.expect(UnencodeableImmediateException.class);
@@ -208,8 +195,7 @@ public class TigerCatInstructionTester
   /**
    * Test that the largest legal immediate can be encoded for double-word add
    */
-  public void testADDDLargeImmediate() throws UnencodeableImmediateException, InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException
-  {
+  public void testADDDLargeImmediate() throws UnencodeableImmediateException, InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, XmlLookupException {
     String toTest = "addd %ret1 %arg1 $0x7FFFF";
 
     Instruction.createInstruction(toTest, true).getMachineCode();

@@ -179,10 +179,19 @@ public abstract class Instruction
         {
           throw new UnencodeableImmediateException("Immediate too large for single-word instruction", immediateValue); 
         }
+
+        // This immediate has passed the checks, so should be valid to encode
+        this.machineCode |= immediateValue << (shiftDistance - SIZEOF_WORD);
+      } else if (this.dataWidth == DataWidth.DOUBLE_WORD)
+      {
+        // The only check in the double word case, done above, is that the immediate
+        // is not too large for the bits remaining.
+        this.machineCode |= immediateValue;
+      } else
+      {
+        assert false : "Unreachable code -- This should have already been checked";
       }
       
-      // This immediate has passed the checks, so should be valid to encode
-      this.machineCode |= immediateValue;
       break;
     }
     

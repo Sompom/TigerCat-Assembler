@@ -120,7 +120,7 @@ public class TigerCatInstructionTester
   @Test
   public void testADDWImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     String toTest = "addw %r1l %r1l $0x500";
-    Byte[] correct = {(byte)0xC0, 0x00, 0x05, 0x00};
+    Byte[] correct = {(byte)0xC0, 0x00, 0x0A, 0x00};
     Instruction toCheck = Instruction.createInstruction(toTest, true);
     Assert.assertArrayEquals(correct, toCheck.getMachineCode());
   }

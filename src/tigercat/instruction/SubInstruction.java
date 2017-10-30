@@ -2,8 +2,8 @@ package tigercat.instruction;
 
 public class SubInstruction extends Instruction
 {
-  static final int SUB_ENCODING = 0x02;
-  static final int SUBC_ENCODING = 0x03;
+  static final int SUB_ENCODING = 0x1A;
+  static final int SUBC_ENCODING = 0x1B;
 
   public SubInstruction(String[] tokens, boolean encodingValid)
       throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,

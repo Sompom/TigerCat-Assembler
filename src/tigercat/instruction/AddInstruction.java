@@ -2,8 +2,8 @@ package tigercat.instruction;
 
 public class AddInstruction extends Instruction
 {
-  static final int ADD_ENCODING = 0x00;
-  static final int ADDC_ENCODING = 0x01;
+  static final int ADD_ENCODING = 0x18;
+  static final int ADDC_ENCODING = 0x19;
 
   protected AddInstruction(String[] tokens, boolean encodingValid)
       throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,

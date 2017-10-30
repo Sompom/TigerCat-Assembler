@@ -71,35 +71,35 @@ public class TigerCatInstructionTester
   public void testGetMachineCodeWithMap() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
     Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
-    Assert.assertArrayEquals(new Byte[]{0x06, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
+    Assert.assertArrayEquals(new Byte[]{(byte)0xC6, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetADDCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
     Instruction toCheck = Instruction.createInstruction("addcd %arg1 %arg1 %arg1", true);
-    Assert.assertArrayEquals(new Byte[]{0x0E, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
+    Assert.assertArrayEquals(new Byte[]{(byte)0xCE, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetADDDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
     Instruction toCheck = Instruction.createInstruction("addd %arg1 %arg1 %arg1", true);
-    Assert.assertArrayEquals(new Byte[]{0x06, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
+    Assert.assertArrayEquals(new Byte[]{(byte)0xC6, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetSUBCDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
     Instruction toCheck = Instruction.createInstruction("subcd %arg1 %arg1 %arg1", true);
-    Assert.assertArrayEquals(new Byte[]{0x1E, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
+    Assert.assertArrayEquals(new Byte[]{(byte)0xDE, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
   public void testGetSUBDMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
     Instruction toCheck = Instruction.createInstruction("subd %arg1 %arg1 %arg1", true);
-    Assert.assertArrayEquals(new Byte[]{0x16, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
+    Assert.assertArrayEquals(new Byte[]{(byte)0xD6, (byte) 0x92, 0x00, 0x00}, toCheck.getMachineCode());
   }
 
   @Test
@@ -139,7 +139,7 @@ public class TigerCatInstructionTester
   public void testADDWImmediate() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException
   {
     String toTest = "addw %r1l %r1l $0x500";
-    Byte[] correct = {0x00, 0x00, 0x05, 0x00};
+    Byte[] correct = {(byte)0xC0, 0x00, 0x05, 0x00};
     Instruction toCheck = Instruction.createInstruction(toTest, true);
     Assert.assertArrayEquals(correct, toCheck.getMachineCode());
   }

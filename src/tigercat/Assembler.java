@@ -10,13 +10,7 @@ package tigercat;
 import java.util.*;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import tigercat.instruction.Instruction;
-import tigercat.instruction.InstructionArgumentCountException;
-import tigercat.instruction.InstructionSyntaxError;
-import tigercat.instruction.InvalidDataWidthException;
-import tigercat.instruction.InvalidOpcodeException;
-import tigercat.instruction.InvalidRegisterException;
-import tigercat.instruction.UnencodeableImmediateException;
+import tigercat.instruction.*;
 
 import static java.lang.System.exit;
 
@@ -149,7 +143,8 @@ public class Assembler
       }
 
     } catch (InstructionSyntaxError | InstructionArgumentCountException | InvalidOpcodeException
-            | InvalidRegisterException | InvalidDataWidthException | DoubleDefinedLabelException e) {
+            | InvalidRegisterException | InvalidDataWidthException | DoubleDefinedLabelException
+            | XmlLookupException e) {
       //for specific types of exceptions:
       //if (e instanceof InstructionSyntaxError) {...
       
@@ -259,7 +254,7 @@ public class Assembler
     }
     catch (UndefinedLabelException | UnencodeableImmediateException | InstructionArgumentCountException
             | InvalidOpcodeException | InstructionSyntaxError | InvalidRegisterException
-            | InvalidDataWidthException e) {
+            | InvalidDataWidthException | XmlLookupException e) {
 
       e.setContext(lineIndex, lines[lineIndex]);
       exceptionList.add(e);

@@ -146,7 +146,7 @@ public class Assembler
             | InvalidRegisterException | InvalidDataWidthException | DoubleDefinedLabelException
             | XmlLookupException e) {
       //for specific types of exceptions:
-      //if (e instanceof InstructionSyntaxError) {...
+      //if (e instanceof InstructionSyntaxError) {...}
       
       //common actions for all exceptions
       //e.printStackTrace();
@@ -216,7 +216,7 @@ public class Assembler
         String[] tokens = line.split("\\s+");
         
         // If there is only one token, it could legally be a zero-argument instruction. No labels to replace
-        if (!(tokens.length == 1))
+        if (tokens.length != 1)
         {
           // The only token which may legally be a label is the last one
           String lastArg = tokens[tokens.length - 1];
@@ -247,7 +247,9 @@ public class Assembler
             }
           }
         }
-        
+
+        // Construct the assembly instruction
+
         Instruction thisInstruction = Instruction.createInstruction(line, true);
         machineCode.addAll(Arrays.asList((thisInstruction.getMachineCode())));
       }

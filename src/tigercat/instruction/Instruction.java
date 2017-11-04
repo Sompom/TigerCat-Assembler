@@ -249,7 +249,8 @@ public abstract class Instruction
           InvalidOpcodeException,
           InstructionSyntaxError,
           InvalidRegisterException,
-          InvalidDataWidthException, XmlLookupException {
+          InvalidDataWidthException,
+          XmlLookupException {
     String[] tokens = line.split("\\s+");
     String opcode = tokens[0];
     

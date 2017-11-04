@@ -282,6 +282,10 @@ public abstract class Instruction
     {
       return new StoreInstruction(tokens, encodingValid);
     }
+    if (opcode.matches("^push.$"))
+    {
+      return new PushInstruction(tokens, encodingValid);
+    }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
   }

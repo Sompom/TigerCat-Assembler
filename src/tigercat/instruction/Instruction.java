@@ -278,6 +278,10 @@ public abstract class Instruction
     {
       return new LoadInstruction(tokens, encodingValid);
     }
+    if (opcode.matches("^sto.$"))
+    {
+      return new StoreInstruction(tokens, encodingValid);
+    }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
   }

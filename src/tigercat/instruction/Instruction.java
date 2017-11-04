@@ -286,6 +286,10 @@ public abstract class Instruction
     {
       return new PushInstruction(tokens, encodingValid);
     }
+    if (opcode.matches("^pop.$"))
+    {
+      return new PopInstruction(tokens, encodingValid);
+    }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
   }

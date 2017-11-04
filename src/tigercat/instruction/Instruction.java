@@ -274,6 +274,10 @@ public abstract class Instruction
     {
       return new MoveInstruction(tokens, encodingValid);
     }
+    if (opcode.matches("^load.$"))
+    {
+      return new LoadInstruction(tokens, encodingValid);
+    }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
   }

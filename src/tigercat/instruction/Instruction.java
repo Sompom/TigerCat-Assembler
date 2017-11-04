@@ -181,7 +181,8 @@ public abstract class Instruction
         }
 
         // This immediate has passed the checks, so should be valid to encode
-        this.machineCode |= immediateValue << (shiftDistance - SIZEOF_WORD);
+        // (Note: The immediate shall be right-aligned. Padding, if present, is before the immediate.)
+        this.machineCode |= immediateValue;
       } else if (this.dataWidth == DataWidth.DOUBLE_WORD)
       {
         // The only check in the double word case, done above, is that the immediate

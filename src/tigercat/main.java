@@ -42,5 +42,16 @@ public class main
     byte[] outputMC = assembler.assemble(inputString);
 
     Files.write(outputPath, outputMC, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    
+    // Write an instruction's worth of zeros to the end of the output to ensure the CPU stalls after executing the program
+    byte[] zeroPadding = new byte[4];
+    for (int index = 0; index < zeroPadding.length; index ++)
+    {
+      // Strictly not necessary, since Java initializes everything to zero,
+      // but better safe than sorry!
+      zeroPadding[index] = 0;
+    }
+    
+    Files.write(outputPath, zeroPadding, StandardOpenOption.APPEND);
   }
 }

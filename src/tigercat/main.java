@@ -31,7 +31,7 @@ public class main
     // Check that the input file exists
     if (!Files.exists(inputPath))
     {
-      System.err.println("Input file does not exist");
+      System.err.println("Input file " + inputPath.toString() + " does not exist");
       System.exit(1);
     }
 

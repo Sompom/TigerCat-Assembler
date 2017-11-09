@@ -98,10 +98,12 @@ public class Assembler
         
         // Get rid of end-of-line comments
         line = line.split(COMMENT_PREFIX)[0];
+        
+        line = line.trim();
 
         // Determine whether the line starts with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-        if (line.matches("^\\s*[A-Z]+" + LABEL_SUFFIX)) {
+        if (line.matches("^\\s*[A-Z_]+" + LABEL_SUFFIX)) {
           String labelName = line.trim();
           // Remove colon
           labelName = labelName.substring(0, labelName.length() - 1);
@@ -113,11 +115,11 @@ public class Assembler
           Label toStore;
 
           // For simplicity, this assembler requires labels be on their own line
-          if (!(line.matches("^\\s*[A-Z]+:\\s$"))) {
+          if (!(line.matches("^\\s*[A-Z_]+" + LABEL_SUFFIX + "\\s*$"))) {
             throw new InstructionSyntaxError("Labels must be on their own line");
           }
           String nextLine;
-          if (lineIndex < lines.length - 1) {
+          if (lineIndex == lines.length - 1) {
             // This label is at the end of the assembly file. Why?
             // Implement this when a sensible solution has been found, otherwise
             // don't write assembly which does this!
@@ -202,13 +204,16 @@ public class Assembler
         
         // Ignore lines which start with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-        if (line.matches("^\\s*[A-Z]+" + LABEL_SUFFIX))
+        if (line.matches("^\\s*[A-Z_]+" + LABEL_SUFFIX))
         {
           continue;
         }
         
         // Get rid of end-of-line comments
         line = line.split(COMMENT_PREFIX)[0];
+        
+        // Remove leading/trailing whitespace
+        line = line.trim();
         
         // If we are here, the remainder should be assembly code
         // Replace labels with their values

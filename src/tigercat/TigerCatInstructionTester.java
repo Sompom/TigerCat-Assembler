@@ -1,5 +1,6 @@
 package tigercat;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -12,6 +13,24 @@ import tigercat.instruction.*;
 
 public class TigerCatInstructionTester
 {
+  /**
+   * convenience method for converting a 'binary' string into a byte array
+   */
+  private Byte[] convertStringToBytes(String binaryString) {
+
+    binaryString = binaryString.replaceAll("\\s", "");
+    int translatedString = Integer.parseUnsignedInt(binaryString, 2);
+    byte[] expectedBytes = ByteBuffer.allocate(4).putInt(translatedString).array(); //todo: check endianness
+    Byte[] javaBullshittery = new Byte[expectedBytes.length];
+
+    int i = 0;
+    for (byte b : expectedBytes) {
+      javaBullshittery[i++] = b; //autoboxing
+    }
+
+    return javaBullshittery;
+  }
+
   @Rule
   public final ExpectedException exception = ExpectedException.none();
 
@@ -89,6 +108,72 @@ public class TigerCatInstructionTester
 
   @Test
   public void testGetMOVWMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", true);
+    Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", true).getMachineCode(), toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetLOADMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck;
+    String expectedString;
+    Byte[] expectedBytes;
+
+    toCheck = Instruction.createInstruction("loadw %a1l %a2l", true);
+    expectedString = "10100  0  1  0010  0011  0000 0000 0000 0000 0";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    toCheck = Instruction.createInstruction("loadw %a1l $0x89AB", true);
+    expectedString = "10100  0  0  0010  0 0000  1000 1001 1010 1011";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    toCheck = Instruction.createInstruction("loadd %arg1 %arg2", true);
+    expectedString = "10100  1  1  010  011  000 0000 0000 0000 0000";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    toCheck = Instruction.createInstruction("loadd %arg1 $0x2FEDCB", true);
+    expectedString = "10100  1  0  010   10 1111 1110 1101 1100 1011";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetSTOMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck;
+    String expectedString;
+    Byte[] expectedBytes;
+
+    toCheck = Instruction.createInstruction("stow %a1l %a2l", true);
+    expectedString = "10101  0  1  0010  0011  0000 0000 0000 0000 0";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    toCheck = Instruction.createInstruction("stow %a1l $0x89AB", true);
+    expectedString = "10101  0  0  0010  0 0000  1000 1001 1010 1011";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    toCheck = Instruction.createInstruction("stod %arg1 %arg2", true);
+    expectedString = "10101  1  1  010  011  000 0000 0000 0000 0000";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    toCheck = Instruction.createInstruction("stod %arg1 $0x2FEDCB", true);
+    expectedString = "10101  1  0  010   10 1111 1110 1101 1100 1011";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetPUSHMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", true);
+    Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", true).getMachineCode(), toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetPOPMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", true);
     Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", true).getMachineCode(), toCheck.getMachineCode());
   }

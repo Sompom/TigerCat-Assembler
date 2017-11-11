@@ -248,7 +248,9 @@ public class Assembler
               }
               
               // Replace the label with its value
-              newLine.append(Instruction.IMMEDIATE_PREFIX + labelMapping.get(lastArg).getAddress().toString());
+              newLine.append(Instruction.IMMEDIATE_PREFIX + "0x" + labelMapping.get(lastArg).getAddress().toString());
+              
+              line = newLine.toString();
             }
           }
         }

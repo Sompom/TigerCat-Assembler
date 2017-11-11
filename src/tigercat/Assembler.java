@@ -141,7 +141,7 @@ public class Assembler
 
         // If none of the other patterns, line is either an assembly code or invalid
         // If it is invalid, trying to create an instruction will throw a useful exception
-        offsetAddress = Instruction.createInstruction(line, false).getSize();
+        offsetAddress += Instruction.createInstruction(line, false).getSize();
       }
 
     } catch (InstructionSyntaxError | InstructionArgumentCountException | InvalidOpcodeException

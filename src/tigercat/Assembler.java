@@ -184,9 +184,9 @@ public class Assembler
     
     String[] lines = assembly.split(System.getProperty("line.separator"));
     
-    try
+    for (lineIndex = 0; lineIndex < lines.length; lineIndex++)
     {
-      for (lineIndex = 0; lineIndex < lines.length; lineIndex++)
+      try
       {
         String line = lines[lineIndex];
         
@@ -260,13 +260,13 @@ public class Assembler
         Instruction thisInstruction = Instruction.createInstruction(line, true);
         machineCode.addAll(Arrays.asList((thisInstruction.getMachineCode())));
       }
-    }
-    catch (UndefinedLabelException | UnencodeableImmediateException | InstructionArgumentCountException
-            | InvalidOpcodeException | InstructionSyntaxError | InvalidRegisterException
-            | InvalidDataWidthException | XmlLookupException e) {
+      catch (UndefinedLabelException | UnencodeableImmediateException | InstructionArgumentCountException
+              | InvalidOpcodeException | InstructionSyntaxError | InvalidRegisterException
+              | InvalidDataWidthException | XmlLookupException e) {
 
-      e.setContext(lineIndex, lines[lineIndex]);
-      exceptionList.add(e);
+        e.setContext(lineIndex, lines[lineIndex]);
+        exceptionList.add(e);
+      }
     }
     
     // Convert ArrayList to byte[]

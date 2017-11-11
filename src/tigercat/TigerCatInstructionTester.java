@@ -147,6 +147,12 @@ public class TigerCatInstructionTester
 
     //condition code checks
 
+    //unconditional
+    toCheck = Instruction.createInstruction("jmp %arg1", true);
+    expectedString = "01100  1  1  1111  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+    
     //a
     toCheck = Instruction.createInstruction("jmpa %arg1", true);
     expectedString = "01100  1  1  0001  010  0000 0000 0000 0000 00";
@@ -224,7 +230,6 @@ public class TigerCatInstructionTester
     toCheck = Instruction.createInstruction("jmpz %arg1", true);
     expectedString = "01100  1  1  1101  010  0000 0000 0000 0000 00";
     expectedBytes = convertStringToBytes(expectedString);
-    Byte[] myMachineCode = toCheck.getMachineCode();
     Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
 
     //f

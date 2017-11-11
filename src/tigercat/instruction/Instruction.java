@@ -362,9 +362,8 @@ public abstract class Instruction
       this.instructionType = DataType.IMMEDIATE;
     } else
     {
-      // Too tired to figure this out right now.
       // Basic idea is it is not a register, not an immediate, and isn't all caps (not a label)
-      throw new NotImplementedException();
+      throw new InstructionSyntaxError("Invalid token: " + last_arg);
     }
     
     // If the encoding is not valid, label values have not been set yet, meaning

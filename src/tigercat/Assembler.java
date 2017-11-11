@@ -81,8 +81,8 @@ public class Assembler
     
     String[] lines = assembly.split(System.getProperty("line.separator"));
 
-    try {
-      for (lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    for (lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      try {
         String line = lines[lineIndex];
 
         // Ignore blank lines
@@ -143,17 +143,17 @@ public class Assembler
         // If it is invalid, trying to create an instruction will throw a useful exception
         offsetAddress += Instruction.createInstruction(line, false).getSize();
       }
-
-    } catch (InstructionSyntaxError | InstructionArgumentCountException | InvalidOpcodeException
-            | InvalidRegisterException | InvalidDataWidthException | DoubleDefinedLabelException
-            | XmlLookupException e) {
+      catch (InstructionSyntaxError | InstructionArgumentCountException | InvalidOpcodeException
+          | InvalidRegisterException | InvalidDataWidthException | DoubleDefinedLabelException
+          | XmlLookupException e) {
       //for specific types of exceptions:
       //if (e instanceof InstructionSyntaxError) {...}
       
       //common actions for all exceptions
       //e.printStackTrace();
-      e.setContext(lineIndex, lines[lineIndex]);
-      exceptionList.add(e);
+        e.setContext(lineIndex, lines[lineIndex]);
+        exceptionList.add(e);
+      }
     }
 
     //printExceptions(exceptionList);

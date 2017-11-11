@@ -8,17 +8,9 @@
 package tigercat.instruction;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.*;
-
-import java.io.IOException;
+import javax.xml.crypto.Data;
 
 /**
  * Helper class for converting assembly string lines to machine code
@@ -59,8 +51,8 @@ public abstract class Instruction
   public static final String IMMEDIATE_PREFIX = "$";
 
   // The XML lookup file uri and DOM
-  private static final String  LOOKUP_FILE_URI = "./src/magicNumbers.xml";
-  private static Document lookupDoc = null;
+  protected static final String  LOOKUP_FILE_URI = "./src/magicNumbers.xml";
+  protected static Document lookupDoc = null;
 
   /**
    * Record whether an instruction operates on single-word or double-word data
@@ -121,7 +113,6 @@ public abstract class Instruction
   public Byte[] getMachineCode() throws UnencodeableImmediateException
   {
     assert arguments != null : "Instruction defined with no labelMapping. Cannot get machine code.";
-    int index;
 
     this.machineCode |= opcode_encoding << SHIFT_OPCODE;
     
@@ -132,7 +123,7 @@ public abstract class Instruction
     int shiftDistance = SHIFT_TYPE_FLAG;
     
     // Loop over all the register arguments and encode them
-    for (index = 0; index < arguments.length - 1; index ++)
+    for (int index = 0; index < arguments.length - 1; index ++)
     {
       // All but the last argument must be registers
       assert arguments[index].getArgumentType() == DataType.REGISTER : "Expected register argument";
@@ -140,13 +131,15 @@ public abstract class Instruction
       shiftDistance -= arguments[index].getEncodingSize();
       this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
     }
-    
-    switch(arguments[index].argumentType)
+
+    //handle the last argument, which is an immediate
+    int lastArg = arguments.length - 1;
+    switch(arguments[lastArg].argumentType)
     {
     case REGISTER:
       // Shift in the register, as normal
-      shiftDistance -= arguments[index].getEncodingSize();
-      this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
+      shiftDistance -= arguments[lastArg].getEncodingSize();
+      this.machineCode |= arguments[lastArg].getMachineCodeRepresentation() << shiftDistance;
       break;
     case IMMEDIATE:
       // To encode an immediate value:
@@ -156,7 +149,7 @@ public abstract class Instruction
       // Throw an UnencodeableImmediateException if either above case is true
       // 3. bitwise or the immediate into place
 
-      int immediateValue = arguments[index].machineCodeRepresentation;
+      int immediateValue = arguments[lastArg].machineCodeRepresentation;
       
       // Create a mask with ones for all the bits we have already used
       // Conveniently, shiftDistance is the number of bits we have left
@@ -290,6 +283,10 @@ public abstract class Instruction
     {
       return new PopInstruction(tokens, encodingValid);
     }
+    if (opcode.matches("^jmp.{1,2}$"))
+    {
+      return new JumpInstruction(tokens, encodingValid);
+    }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
   }
@@ -313,24 +310,28 @@ public abstract class Instruction
           InvalidOpcodeException, InvalidRegisterException, XmlLookupException {
     this.machineCode = 0;
     this.arguments = new Argument[num_args];
-    
-    if (tokens.length != num_args + 1)
+
+    String opcode = tokens[0];
+    boolean isJmp = opcode.startsWith("jmp");
+
+    if ((!isJmp && tokens.length != num_args + 1) || (isJmp && tokens.length != num_args))
     {
       throw new InstructionArgumentCountException(num_args, tokens.length - 1);
     }
-    
-    String opcode = tokens[0];
 
-    // Add the data-width flag to the machine code
-    if (opcode.endsWith("w"))
-    {
-      this.dataWidth = DataWidth.SINGLE_WORD;
-    } else if (opcode.endsWith("d"))
-    {
+
+    //don't check this for jumps
+    if(isJmp) {
       this.dataWidth = DataWidth.DOUBLE_WORD;
-    } else
-    {
-      throw new InvalidDataWidthException(opcode);
+    } else {
+      // Add the data-width flag to the machine code
+      if (opcode.endsWith("w")) {
+        this.dataWidth = DataWidth.SINGLE_WORD;
+      } else if (opcode.endsWith("d")) {
+        this.dataWidth = DataWidth.DOUBLE_WORD;
+      } else {
+        throw new InvalidDataWidthException(opcode);
+      }
     }
     
     if (encodingValid)
@@ -338,9 +339,13 @@ public abstract class Instruction
       // The syntax checker requires labels to be replaced with values
       checkInstructionSyntax(tokens);
     }
-    
+
     this.opcode_encoding = opcode_encoding;
-    String last_arg = tokens[num_args];
+    String last_arg;
+    if(isJmp)
+      last_arg = tokens[num_args - 1];
+    else
+      last_arg = tokens[num_args];
 
     // Decide whether we are using immediate data or not
     // The only argument which can validly be immediate is the last one,
@@ -369,15 +374,22 @@ public abstract class Instruction
       return;
     }
     
-    
-    // All but the last argument are certainly registers
-    for (int index = 0; index < num_args - 1; index++)
-    {
-      arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, DataType.REGISTER);
-    }
-    // The last argument may be an immediate, depending on the type of instruction
-    arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
+    if(isJmp) {
+      //the first argument is the condition code
+      int index = 0;
+      arguments[index] = new ConditionCode(tokens[0].substring(3), this.dataWidth);
 
+      // The last argument may be an immediate, depending on the type of instruction
+      arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
+
+    } else {
+      // All but the last argument are certainly registers
+      for (int index = 0; index < num_args - 1; index++) {
+        arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, DataType.REGISTER);
+      }
+      // The last argument may be an immediate, depending on the type of instruction
+      arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
+    }
   }
 
   /**
@@ -424,138 +436,4 @@ public abstract class Instruction
     }
   }
 
-  protected class Argument
-  {
-    protected static final String ZERO_REG = "zero";
-    
-    protected int machineCodeRepresentation;
-    protected DataType argumentType;
-    protected int size;
-    
-    public DataType getArgumentType()
-    {
-      return argumentType;
-    }
-    
-    public int getMachineCodeRepresentation()
-    {
-      return machineCodeRepresentation;
-    }
-
-    protected int getRegisterCode(String registerName, DataWidth dataWidth) throws XmlLookupException, InvalidRegisterException {
-      //one-time setup
-      try {
-        if(lookupDoc == null) {
-          DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-          DocumentBuilder builder = factory.newDocumentBuilder();
-          lookupDoc = builder.parse(LOOKUP_FILE_URI);
-        }
-      } catch (ParserConfigurationException | SAXException | IOException e) {
-        throw new XmlLookupException("XML file not found: " + LOOKUP_FILE_URI + ".");
-      }
-
-      //set data width
-      String widthArg;
-      if (dataWidth == DataWidth.SINGLE_WORD) {
-        widthArg = "single";
-      } else if (dataWidth == DataWidth.DOUBLE_WORD) {
-        widthArg = "double";
-      } else {
-        throw new XmlLookupException("Unrecognized datawidth argument");
-      }
-      XPathFactory xPathfactory = XPathFactory.newInstance();
-      XPath xpath = xPathfactory.newXPath();
-      String protoExpr = String.format("/lookup/register-numbers/register[@data_width='%s' and @name='%s']",
-                                       widthArg, registerName);
-
-      try {
-        XPathExpression expr = xpath.compile(protoExpr);
-        NodeList protoResult = (NodeList) expr.evaluate(lookupDoc, XPathConstants.NODESET);
-
-        //check to make sure we only found one matching register
-        if(protoResult.getLength() == 0)
-          throw new InvalidRegisterException(registerName);
-        if(protoResult.getLength() > 1)
-          throw new XmlLookupException("More than one matching register found for: " + registerName
-                                               + " (this is a bug in the assembler.");
-
-        return Integer.decode(protoResult.item(0).getTextContent());
-
-      } catch (XPathExpressionException e) {
-        throw new XmlLookupException("XML lookup of register: '" + registerName + "' failed.");
-      }
-    }
-    
-    /**
-     * Returns the size of the encoding of this argument
-     * 
-     * @return The size of this argument
-     */
-    public int getEncodingSize()
-    {
-      assert argumentType == DataType.REGISTER : "getEncodingSize undefined for non-register arguments";
-      return size;
-    }
-
-    public Argument(String argument, DataWidth dataWidth, DataType argumentType)
-            throws InvalidRegisterException, XmlLookupException {
-      
-      this.argumentType = argumentType;
-      if (argumentType == DataType.IMMEDIATE)
-      {
-        machineCodeRepresentation = this.parseImmediate(argument);
-      } else if (argumentType == DataType.REGISTER)
-      {
-        machineCodeRepresentation = this.parseRegister(argument, dataWidth);
-        switch(dataWidth)
-        {
-        case SINGLE_WORD:
-          size = SIZEOF_SINGLE_WORD_REG_ENCODING;
-          break;
-        case DOUBLE_WORD:
-          size = SIZEOF_DOUBLE_WORD_REG_ENCODING;
-          break;
-        }
-      } else
-      {
-        throw new RuntimeException("Undefined Instruction Data Type");
-      }
-    }
-
-    /**
-     * Convert a register to its machine code representation
-     * 
-     * @param argument
-     *          A string containing a register
-     * @param dataWidth
-     *          Whether a single- or double-word register should be encoded
-     * @return The machine code encoding of the register
-     * @throws InvalidRegisterException
-     *           If an undefined register is encountered
-     */
-    protected int parseRegister(String argument, DataWidth dataWidth) throws InvalidRegisterException, XmlLookupException {
-      if (dataWidth == DataWidth.SINGLE_WORD | dataWidth == DataWidth.DOUBLE_WORD)
-      {
-        return getRegisterCode(argument, dataWidth);
-      } else
-      {
-        throw new RuntimeException("Undefined Data Width");
-      }
-    }
-
-    /**
-     * Convert an immediate value into a byte array The return value is always
-     * 32-bits, even though no immediate can legally have that length
-     * 
-     * @param argument
-     *          A string containing a hexadecimal immediate value, including 0x prefix
-     * @return Machine Code representation of the immediate value
-     */
-    protected int parseImmediate(String argument)
-    {
-      // Strip 0x prefix
-      argument = argument.substring(2);
-      return Integer.parseUnsignedInt(argument, 16);
-    }
-  }
 }

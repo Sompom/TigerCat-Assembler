@@ -1,6 +1,5 @@
 package tigercat.instruction;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import tigercat.instruction.Register.HalfReg;
 
 public class MoveInstruction extends Instruction

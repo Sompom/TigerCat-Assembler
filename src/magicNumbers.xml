@@ -27,5 +27,22 @@
         <register data_width="double" name="arg4">0x5</register>
         <register data_width="double" name="SP">0x6</register>
         <register data_width="double" name="IP">0x7</register>
-    </register-numbers>1
+    </register-numbers>
+    <condition-codes>
+        <code condition="a">0x1</code>
+        <code condition="ae">0x2</code>
+        <code condition="b">0x3</code>
+        <code condition="be">0x4</code>
+        <code condition="g">0x5</code>
+        <code condition="ge">0x6</code>
+        <code condition="l">0x7</code>
+        <code condition="le">0x8</code>
+        <code condition="e">0x9</code>
+        <code condition="o">0xA</code>
+        <code condition="c">0xB</code>
+        <code condition="s">0xC</code>
+        <code condition="z">0xD</code>
+        <code condition="f">0x0</code>
+        <code condition="t">0xF</code>
+    </condition-codes>
 </lookup>

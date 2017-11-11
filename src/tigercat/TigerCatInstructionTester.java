@@ -140,6 +140,115 @@ public class TigerCatInstructionTester
   }
 
   @Test
+  public void testGetJMPMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck;
+    String expectedString;
+    Byte[] expectedBytes;
+
+    //condition code checks
+
+    //a
+    toCheck = Instruction.createInstruction("jmpa %arg1", true);
+    expectedString = "01100  1  1  0001  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //ae
+    toCheck = Instruction.createInstruction("jmpae %arg1", true);
+    expectedString = "01100  1  1  0010  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //b
+    toCheck = Instruction.createInstruction("jmpb %arg1", true);
+    expectedString = "01100  1  1  0011  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+
+    //be
+    toCheck = Instruction.createInstruction("jmpbe %arg1", true);
+    expectedString = "01100  1  1  0100  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //g
+    toCheck = Instruction.createInstruction("jmpg %arg1", true);
+    expectedString = "01100  1  1  0101  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //ge
+    toCheck = Instruction.createInstruction("jmpge %arg1", true);
+    expectedString = "01100  1  1  0110  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //l
+    toCheck = Instruction.createInstruction("jmpl %arg1", true);
+    expectedString = "01100  1  1  0111  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //le
+    toCheck = Instruction.createInstruction("jmple %arg1", true);
+    expectedString = "01100  1  1  1000  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //e
+    toCheck = Instruction.createInstruction("jmpe %arg1", true);
+    expectedString = "01100  1  1  1001  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //o
+    toCheck = Instruction.createInstruction("jmpo %arg1", true);
+    expectedString = "01100  1  1  1010  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //c
+    toCheck = Instruction.createInstruction("jmpc %arg1", true);
+    expectedString = "01100  1  1  1011  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //s
+    toCheck = Instruction.createInstruction("jmps %arg1", true);
+    expectedString = "01100  1  1  1100  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //z
+    toCheck = Instruction.createInstruction("jmpz %arg1", true);
+    expectedString = "01100  1  1  1101  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Byte[] myMachineCode = toCheck.getMachineCode();
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //f
+    toCheck = Instruction.createInstruction("jmpf %arg1", true);
+    expectedString = "01100  1  1  0000  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+    //t
+    toCheck = Instruction.createInstruction("jmpt %arg1", true);
+    expectedString = "01100  1  1  1111  010  0000 0000 0000 0000 00";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+
+
+    //Immediate encoding check
+
+    toCheck = Instruction.createInstruction("jmpge $0x1FEDCB", true);
+    expectedString = "01100  1  0  0110  1 1111 1110 1101 1100 1011";
+    expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
   public void testGetSTOMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck;
     String expectedString;

@@ -379,17 +379,15 @@ public abstract class Instruction
       int index = 0;
       arguments[index] = new ConditionCode(tokens[0].substring(3), this.dataWidth);
 
-      // The last argument may be an immediate, depending on the type of instruction
-      arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
-
     } else {
       // All but the last argument are certainly registers
       for (int index = 0; index < num_args - 1; index++) {
         arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, DataType.REGISTER);
       }
-      // The last argument may be an immediate, depending on the type of instruction
-      arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
     }
+
+    // The last argument may be an immediate, depending on the type of instruction
+    arguments[num_args - 1] = new Argument(last_arg.substring(1), this.dataWidth, this.instructionType);
   }
 
   /**

@@ -47,9 +47,17 @@ public class Assembler
     ArrayList<AssemblerException> exceptionList = new ArrayList<>();
 
     HashMap<String, Label> labelMapping = firstPass(assembly, exceptionList);
+    if (exceptionList.size() > 0)
+    {
+      System.out.println("First-Pass Errors:");
+      printExceptions(exceptionList);
+      exit(1);
+    }
+    
     machineCode = secondPass(assembly, labelMapping, exceptionList);
 
     if(exceptionList.size() > 0) {
+      System.out.println("Second-Pass Errors:");
       printExceptions(exceptionList);
       exit(1);
     }

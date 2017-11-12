@@ -162,6 +162,12 @@ public class Assembler
         e.setContext(lineIndex, lines[lineIndex]);
         exceptionList.add(e);
       }
+      catch (NumberFormatException e)
+      {
+        UnencodeableImmediateException newException = new UnencodeableImmediateException("Integer parser threw an error " + e.getMessage() , 0);
+        newException.setContext(lineIndex, lines[lineIndex]);
+        exceptionList.add(newException);
+      }
     }
 
     //printExceptions(exceptionList);
@@ -274,6 +280,11 @@ public class Assembler
 
         e.setContext(lineIndex, lines[lineIndex]);
         exceptionList.add(e);
+      } catch (NumberFormatException e)
+      {
+        UnencodeableImmediateException newException = new UnencodeableImmediateException("Integer parser threw an error " + e.getMessage() , 0);
+        newException.setContext(lineIndex, lines[lineIndex]);
+        exceptionList.add(newException);
       }
     }
     

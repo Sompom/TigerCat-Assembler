@@ -67,6 +67,19 @@ public class MoveInstruction extends Instruction
       {
         // Decompose to two movw instructions
         childInstructions = new Instruction[2];
+        
+        if (!encodingValid)
+        {
+          // Do not attempt to finish this instruction because the labels may not be replaced
+          // Generate two garbage ADDW instructions to allow getSize to compute
+          String child1 = "movw %a1l %al1";
+          String child2 = "movw %a1l %al1";
+
+          childInstructions[0] = Instruction.createInstruction(child1, encodingValid);
+          childInstructions[1] = Instruction.createInstruction(child2, encodingValid);
+          return;
+        }
+        
         Argument immediateArg = new Argument(tokens[2].substring(IMMEDIATE_PREFIX.length()), DataWidth.DOUBLE_WORD, DataType.IMMEDIATE);
         
         int immediate = immediateArg.getMachineCodeRepresentation();

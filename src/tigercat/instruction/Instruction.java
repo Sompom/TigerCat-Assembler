@@ -338,7 +338,7 @@ public abstract class Instruction
       // TODO: Implement
       throw new InvalidOpcodeException("opcode not implemented: " + opcode);
     }
-    if (opcode.matches("^jmp.{1,2}$"))
+    if (opcode.matches("^jmp.{0,2}$"))
     {
       return new JumpInstruction(tokens, encodingValid);
     }

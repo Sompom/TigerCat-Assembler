@@ -247,6 +247,16 @@ public abstract class Instruction
     String[] tokens = line.split("\\s+");
     String opcode = tokens[0];
     
+    if (opcode.matches("^noop$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^debug$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
     if (opcode.matches("^add.$"))
     {
       return new AddInstruction(tokens, encodingValid);
@@ -263,6 +273,39 @@ public abstract class Instruction
     {
       return new SubInstruction(tokens, encodingValid);
     }
+    if (opcode.matches("^convs$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^convu$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^ssr.$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^sur.$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^sl.$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^push.$"))
+    {
+      return new PushInstruction(tokens, encodingValid);
+    }
+    if (opcode.matches("^pop.$"))
+    {
+      return new PopInstruction(tokens, encodingValid);
+    }
     if (opcode.matches("^mov.$"))
     {
       return new MoveInstruction(tokens, encodingValid);
@@ -275,17 +318,49 @@ public abstract class Instruction
     {
       return new StoreInstruction(tokens, encodingValid);
     }
-    if (opcode.matches("^push.$"))
+    if (opcode.matches("^and.$"))
     {
-      return new PushInstruction(tokens, encodingValid);
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
     }
-    if (opcode.matches("^pop.$"))
+    if (opcode.matches("^or.$"))
     {
-      return new PopInstruction(tokens, encodingValid);
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^xor.$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^inv.$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
     }
     if (opcode.matches("^jmp.{1,2}$"))
     {
       return new JumpInstruction(tokens, encodingValid);
+    }
+    if (opcode.matches("^cmp.$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^readwcc$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^call$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+    }
+    if (opcode.matches("^ret$"))
+    {
+      // TODO: Implement
+      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
     }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);

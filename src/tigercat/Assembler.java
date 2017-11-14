@@ -31,6 +31,12 @@ public class Assembler
    */
   static final String LABEL_SUFFIX = ":";
   
+  /**
+   * A label is defined by one or more capital letters or underscores,
+   * followed by LABEL_SUFFIX
+   */
+  static final String LABEL_REGEX = "\\s*[A-Z_]+" + LABEL_SUFFIX;
+  
   public Assembler()
   {
     // For testability, the assembler should have no class-level data
@@ -111,7 +117,7 @@ public class Assembler
 
         // Determine whether the line starts with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-        if (line.matches("^\\s*[A-Z_]+" + LABEL_SUFFIX)) {
+        if (line.matches("^" + LABEL_REGEX)) {
           String labelName = line.trim();
           // Remove colon
           labelName = labelName.substring(0, labelName.length() - 1);
@@ -123,7 +129,7 @@ public class Assembler
           Label toStore;
 
           // For simplicity, this assembler requires labels be on their own line
-          if (!(line.matches("^\\s*[A-Z_]+" + LABEL_SUFFIX + "\\s*$"))) {
+          if (!(line.matches("^" + LABEL_REGEX + "\\s*$"))) {
             throw new InstructionSyntaxError("Labels must be on their own line");
           }
           String nextLine;
@@ -218,7 +224,7 @@ public class Assembler
         
         // Ignore lines which start with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-        if (line.matches("^\\s*[A-Z_]+" + LABEL_SUFFIX))
+        if (line.matches("^" + LABEL_REGEX))
         {
           continue;
         }

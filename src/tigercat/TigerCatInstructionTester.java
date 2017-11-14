@@ -281,9 +281,39 @@ public class TigerCatInstructionTester
   }
 
   @Test
-  public void testGetPUSHMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
-    Instruction toCheck = Instruction.createInstruction("movw %r1l %a1l", true);
-    Assert.assertArrayEquals(Instruction.createInstruction("addw %r1l %zero %a1l", true).getMachineCode(), toCheck.getMachineCode());
+  public void testGetPUSHW_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("pushw %a1l", true);
+
+    String expectedString = "10000  0  1  0010   0 0000 0000 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetPUSHW_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("pushw $0xF0F0", true);
+
+    String expectedString = "10000  0  0  0 0000 0000 1111 0000 1111 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetPUSHD_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("pushd %arg1", true);
+
+    String expectedString = "10000  1  1  010 00 0000 0000 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetPUSHD_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("pushd $0xF0F0F0", true);
+
+    String expectedString = "10000  1  0  0 1111 0000 1111 0000 1111 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
   }
 
   @Test

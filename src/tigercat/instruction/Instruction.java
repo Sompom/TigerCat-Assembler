@@ -388,7 +388,8 @@ public abstract class Instruction
     String opcode = tokens[0];
     boolean isJmp = opcode.startsWith("jmp");
 
-    if ((!isJmp && tokens.length != num_args + 1) || (isJmp && tokens.length != num_args))
+    // We should have the corect number of arguments plus the actual opcode
+    if (tokens.length != num_args + 1)
     {
       throw new InstructionArgumentCountException(num_args, tokens.length - 1);
     }
@@ -416,10 +417,7 @@ public abstract class Instruction
 
     this.opcode_encoding = opcode_encoding;
     String last_arg;
-    if(isJmp)
-      last_arg = tokens[num_args - 1];
-    else
-      last_arg = tokens[num_args];
+    last_arg = tokens[num_args];
 
     // Decide whether we are using immediate data or not
     // The only argument which can validly be immediate is the last one,
@@ -447,16 +445,9 @@ public abstract class Instruction
       return;
     }
     
-    if(isJmp) {
-      //the first argument is the condition code
-      int index = 0;
-      arguments[index] = new ConditionCode(tokens[0].substring(3), this.dataWidth);
-
-    } else {
-      // All but the last argument are certainly registers
-      for (int index = 0; index < num_args - 1; index++) {
-        arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, DataType.REGISTER);
-      }
+    // All but the last argument are certainly registers
+    for (int index = 0; index < num_args - 1; index++) {
+      arguments[index] = new Argument(tokens[index + 1].substring(1), this.dataWidth, DataType.REGISTER);
     }
 
     // The last argument may be an immediate, depending on the type of instruction

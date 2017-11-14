@@ -24,18 +24,18 @@ public class Assembler
   /**
    * Comments start with this symbol
    */
-  static final String COMMENT_PREFIX = "#";
+  public static final String COMMENT_PREFIX = "#";
   
   /**
    * Labels end with a colon
    */
-  static final String LABEL_SUFFIX = ":";
+  public static final String LABEL_SUFFIX = ":";
   
   /**
    * A label is defined by one or more capital letters or underscores,
    * followed by LABEL_SUFFIX
    */
-  static final String LABEL_REGEX = "\\s*[A-Z_]+" + LABEL_SUFFIX;
+  public static final String LABEL_REGEX = "\\s*[A-Z_]+" + LABEL_SUFFIX;
   
   public Assembler()
   {

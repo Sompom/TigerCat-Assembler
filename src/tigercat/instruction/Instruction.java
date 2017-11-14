@@ -9,6 +9,7 @@ package tigercat.instruction;
 
 import org.w3c.dom.Document;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import tigercat.Assembler;
 
 import javax.xml.crypto.Data;
 
@@ -429,7 +430,7 @@ public abstract class Instruction
     } else if (last_arg.startsWith(REGISTER_PREFIX))
     {
       this.instructionType = DataType.REGISTER;
-    } else if (last_arg.matches("^[A-Z]+$"))
+    } else if (last_arg.matches("^" + Assembler.LABEL_REGEX + "$"))
     {
       // Might be a label. Assume Immediate
       this.instructionType = DataType.IMMEDIATE;

@@ -343,8 +343,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^cmp.$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new CmpInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^readwcc$"))
     {

@@ -365,6 +365,42 @@ public class TigerCatInstructionTester
     Instruction toCheck = Instruction.createInstruction(toTest, true);
     Assert.assertArrayEquals(correct, toCheck.getMachineCode());
   }
+
+  @Test
+  public void testGetANDW_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("andw %a2l %a2h %a4l", true);
+
+    String expectedString = "11100  0  1  0011 1011 0101 0 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetANDW_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("andw %a2l %rand $0x5F5F", true);
+
+    String expectedString = "11100  0  0  0011 0111 0 0101 1111 0101 1111";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetANDD_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("andd %arg1 %ret1 %ret2", true);
+
+    String expectedString = "11100  1  1  010 000 001 0000 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetANDD_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("andd %ret2 %IP $0x70505", true);
+
+    String expectedString = "11100  1  0  001 111 111 0000 0101 0000 0101";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
   
   @Test
   /**

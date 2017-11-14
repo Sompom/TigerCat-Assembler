@@ -320,8 +320,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^and.$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+        return new AndInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^or.$"))
     {

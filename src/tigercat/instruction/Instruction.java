@@ -385,20 +385,14 @@ public abstract class Instruction
     this.arguments = new Argument[num_args];
 
     String opcode = tokens[0];
-    boolean isJmp = opcode.startsWith("jmp");
 
-    // We should have the corect number of arguments plus the actual opcode
+    // We should have the correct number of arguments plus the actual opcode
     if (tokens.length != num_args + 1)
     {
       throw new InstructionArgumentCountException(num_args, tokens.length - 1);
     }
 
-
-    //don't check this for jumps
-    if(isJmp) {
-      this.dataWidth = DataWidth.DOUBLE_WORD;
-    }
-    else if (num_args == 0)
+    if (num_args == 0)
     {
       // Zero argument instructions don't have a data width, per-se
       this.dataWidth = DataWidth.SINGLE_WORD;
@@ -410,7 +404,17 @@ public abstract class Instruction
       } else if (opcode.endsWith("d")) {
         this.dataWidth = DataWidth.DOUBLE_WORD;
       } else {
-        throw new InvalidDataWidthException(opcode);
+        if (opcode.startsWith("jmp"))
+        {
+          this.dataWidth = DataWidth.DOUBLE_WORD;
+        } else if (opcode.matches("^convs$"))
+        {
+          this.dataWidth = DataWidth.SINGLE_WORD;
+        }
+        else
+        {
+          throw new InvalidDataWidthException(opcode);
+        }
       }
     }
     

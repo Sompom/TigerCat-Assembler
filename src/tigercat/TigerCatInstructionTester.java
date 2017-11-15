@@ -83,6 +83,15 @@ public class TigerCatInstructionTester
   }
 
   @Test
+  public void testGet_noop_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("noop", true);
+
+    String child = "jmpf %arg1";
+    Byte[] expectedBytes = Instruction.createInstruction(child, true).getMachineCode();
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
   public void testGet_debug_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("debug", true);
 

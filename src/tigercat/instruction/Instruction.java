@@ -335,8 +335,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^inv.$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new InvInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^jmp.{0,2}$"))
     {

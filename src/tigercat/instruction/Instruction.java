@@ -323,12 +323,11 @@ public abstract class Instruction
     }
     if (opcode.matches("^and.$"))
     {
-        return new AndInstruction(tokens, encodingValid);
+      return new AndInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^or.$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new OrInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^xor.$"))
     {

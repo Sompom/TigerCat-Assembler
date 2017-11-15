@@ -421,6 +421,42 @@ public class TigerCatInstructionTester
   }
 
   @Test
+  public void testGetORW_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("orw %a3l %a3h %r2h", true);
+
+    String expectedString = "11101  0  1  0100 1100 1001 0 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetORW_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("orw %a4l %a4h $0xF1F1", true);
+
+    String expectedString = "11101  0  0  0101 1101 0 1111 0001 1111 0001";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetORD_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("ord %arg2 %arg3 %arg4", true);
+
+    String expectedString = "11101  1  1  011 100 101 0000 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetORD_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("ord %IP %SP $0x45454", true);
+
+    String expectedString = "11101  1  0  111 110 100 0101 0100 0101 0100";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
   public void testGetCMPW_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
     Instruction toCheck = Instruction.createInstruction("cmpw %a2h %a4l", true);
 

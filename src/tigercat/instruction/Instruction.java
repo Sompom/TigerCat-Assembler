@@ -331,8 +331,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^xor.$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new XorInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^inv.$"))
     {

@@ -133,61 +133,65 @@ public abstract class Instruction
       this.machineCode |= arguments[index].getMachineCodeRepresentation() << shiftDistance;
     }
 
-    //handle the last argument, which is an immediate
-    int lastArg = arguments.length - 1;
-    switch(arguments[lastArg].argumentType)
+    // If this instruction actually has arguments...
+    if (!(arguments.length == 0))
     {
-    case REGISTER:
-      // Shift in the register, as normal
-      shiftDistance -= arguments[lastArg].getEncodingSize();
-      this.machineCode |= arguments[lastArg].getMachineCodeRepresentation() << shiftDistance;
-      break;
-    case IMMEDIATE:
-      // To encode an immediate value:
-      // 1. Check if the immediate is too large to be encoded with the bits remaining.
-      // 2. If the instruction uses single-word data, check for an immediate larger than
-      //    16 bits
-      // Throw an UnencodeableImmediateException if either above case is true
-      // 3. bitwise or the immediate into place
-
-      int immediateValue = arguments[lastArg].machineCodeRepresentation;
-      
-      // Create a mask with ones for all the bits we have already used
-      // Conveniently, shiftDistance is the number of bits we have left
-      int mask = ~((int)Math.pow(2, shiftDistance) - 1);
-      
-      // AND the mask with the immediate to encode
-      // If the result is non-zero, the immediate is too large
-      if (!((immediateValue & mask) == 0))
+      //handle the last argument, which is an immediate
+      int lastArg = arguments.length - 1;
+      switch(arguments[lastArg].argumentType)
       {
-        throw new UnencodeableImmediateException("Immediate too large to be encoded", immediateValue); 
-      }
-      
-      if (this.dataWidth == DataWidth.SINGLE_WORD)
-      {
-        // If this is a single-word instruction
-        // Create a mask with ones in the high 16-bits and zeros in the low 16-bits
-        // As above, AND the mask with the immediate. If the result is non-zero, the immediate is too large 
-        mask = ~0xFFFF;
+      case REGISTER:
+        // Shift in the register, as normal
+        shiftDistance -= arguments[lastArg].getEncodingSize();
+        this.machineCode |= arguments[lastArg].getMachineCodeRepresentation() << shiftDistance;
+        break;
+      case IMMEDIATE:
+        // To encode an immediate value:
+        // 1. Check if the immediate is too large to be encoded with the bits remaining.
+        // 2. If the instruction uses single-word data, check for an immediate larger than
+        //    16 bits
+        // Throw an UnencodeableImmediateException if either above case is true
+        // 3. bitwise or the immediate into place
+  
+        int immediateValue = arguments[lastArg].machineCodeRepresentation;
+        
+        // Create a mask with ones for all the bits we have already used
+        // Conveniently, shiftDistance is the number of bits we have left
+        int mask = ~((int)Math.pow(2, shiftDistance) - 1);
+        
+        // AND the mask with the immediate to encode
+        // If the result is non-zero, the immediate is too large
         if (!((immediateValue & mask) == 0))
         {
-          throw new UnencodeableImmediateException("Immediate too large for single-word instruction", immediateValue); 
+          throw new UnencodeableImmediateException("Immediate too large to be encoded", immediateValue); 
         }
-
-        // This immediate has passed the checks, so should be valid to encode
-        // (Note: The immediate shall be right-aligned. Padding, if present, is before the immediate.)
-        this.machineCode |= immediateValue;
-      } else if (this.dataWidth == DataWidth.DOUBLE_WORD)
-      {
-        // The only check in the double word case, done above, is that the immediate
-        // is not too large for the bits remaining.
-        this.machineCode |= immediateValue;
-      } else
-      {
-        assert false : "Unreachable code -- This should have already been checked";
+        
+        if (this.dataWidth == DataWidth.SINGLE_WORD)
+        {
+          // If this is a single-word instruction
+          // Create a mask with ones in the high 16-bits and zeros in the low 16-bits
+          // As above, AND the mask with the immediate. If the result is non-zero, the immediate is too large 
+          mask = ~0xFFFF;
+          if (!((immediateValue & mask) == 0))
+          {
+            throw new UnencodeableImmediateException("Immediate too large for single-word instruction", immediateValue); 
+          }
+  
+          // This immediate has passed the checks, so should be valid to encode
+          // (Note: The immediate shall be right-aligned. Padding, if present, is before the immediate.)
+          this.machineCode |= immediateValue;
+        } else if (this.dataWidth == DataWidth.DOUBLE_WORD)
+        {
+          // The only check in the double word case, done above, is that the immediate
+          // is not too large for the bits remaining.
+          this.machineCode |= immediateValue;
+        } else
+        {
+          assert false : "Unreachable code -- This should have already been checked";
+        }
+        
+        break;
       }
-      
-      break;
     }
     
     return convertIntToByteArray(this.machineCode);
@@ -255,8 +259,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^debug$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new DebugInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^add.$"))
     {
@@ -398,7 +401,13 @@ public abstract class Instruction
     //don't check this for jumps
     if(isJmp) {
       this.dataWidth = DataWidth.DOUBLE_WORD;
-    } else {
+    }
+    else if (num_args == 0)
+    {
+      // Zero argument instructions don't have a data width, per-se
+      this.dataWidth = DataWidth.SINGLE_WORD;
+    }
+    else {
       // Add the data-width flag to the machine code
       if (opcode.endsWith("w")) {
         this.dataWidth = DataWidth.SINGLE_WORD;
@@ -422,7 +431,11 @@ public abstract class Instruction
     // Decide whether we are using immediate data or not
     // The only argument which can validly be immediate is the last one,
     // and the syntax check has already said the instruction is valid
-    if (last_arg.startsWith(IMMEDIATE_PREFIX))
+    if (num_args == 0)
+    {
+      // Zero argument instructions don't have a data type
+      this.instructionType = DataType.IMMEDIATE;
+    } else if (last_arg.startsWith(IMMEDIATE_PREFIX))
     {
       this.instructionType = DataType.IMMEDIATE;
     } else if (last_arg.startsWith(REGISTER_PREFIX))
@@ -440,7 +453,7 @@ public abstract class Instruction
     
     // If the encoding is not valid, label values have not been set yet, meaning
     // we should not continue to generate machine code
-    if (!(encodingValid))
+    if (!(encodingValid) || num_args == 0)
     {
       return;
     }

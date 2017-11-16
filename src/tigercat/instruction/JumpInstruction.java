@@ -8,6 +8,11 @@ public class JumpInstruction extends Instruction
           throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,
           InstructionSyntaxError, InvalidRegisterException, XmlLookupException {
     super(tokens, encodingValid, JUMP_ENCODING, ONE_ARGUMENT);
+
+    if (!encodingValid)
+    {
+      return;
+    }
     
     assert this.arguments.length == 1 : "jmp constructed with wrong number of arguments";
     

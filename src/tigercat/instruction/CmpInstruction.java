@@ -9,6 +9,11 @@ public class CmpInstruction extends Instruction
           InstructionSyntaxError, InvalidRegisterException, XmlLookupException {
     super(tokens, encodingValid, CMP_ENCODING, TWO_ARGUMENTS);
 
+    if (!encodingValid)
+    {
+      return;
+    }
+    
     assert this.arguments.length == 2 : "CMP should have two real arguments";
     
     // CMP needs a dummy destination argument, so add it

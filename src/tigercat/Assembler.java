@@ -32,10 +32,15 @@ public class Assembler
   public static final String LABEL_SUFFIX = ":";
   
   /**
+   * Constant values end with an equals sign
+   */
+  public static final String VALUE_SUFFIX = "=";
+  
+  /**
    * A label is defined by one or more capital letters or underscores,
    * followed by LABEL_SUFFIX
    */
-  public static final String LABEL_REGEX = "\\s*[A-Z_]+" + LABEL_SUFFIX;
+  public static final String LABEL_REGEX = "\\s*[A-Z_]+";
   
   public Assembler()
   {
@@ -116,20 +121,56 @@ public class Assembler
         line = line.trim();
 
         // Determine whether the line starts with a label
-        // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-        if (line.matches("^" + LABEL_REGEX)) {
-          String labelName = line.trim();
-          // Remove colon
-          labelName = labelName.substring(0, labelName.length() - 1);
+        // Labels are defined as whitespace, followed by a sequence of upper-case letters
+        if (line.matches("^" + LABEL_REGEX + ".*")) {
+          String labelName;
+          
+          line = line.trim();
+
+          // A value is a label, followed by an equals sign, followed by a number in hexadecimal
+          String constantValueRegex = "^" + LABEL_REGEX + VALUE_SUFFIX + "\\s*0x" + "[0-9A-Fa-f]+" + "$";
+          
+          // An address is a label, followed by a colon
+          // For simplicity, we enforce below that a label must be on its own line
+          String addressLabelRegex = "^" + LABEL_REGEX + LABEL_SUFFIX;
+          
+          if (line.matches(addressLabelRegex))
+          {
+            // Remove the colon
+            labelName = line.substring(0, line.length() - 1);
+          }
+          else if (line.matches(constantValueRegex))
+          {
+            String[] tokens = line.split(VALUE_SUFFIX);
+            labelName = tokens[0];
+          } else
+          {
+            throw new InstructionSyntaxError("Label does not define a value (needs " + VALUE_SUFFIX + "),"
+                + "nor an address (needs " + LABEL_SUFFIX +")");
+          }
 
           if (labelMapping.containsKey(labelName)) {
             throw new DoubleDefinedLabelException(labelName);
           }
 
           Label toStore;
+          
+          // Check if the line is a constant value
+          if (line.matches(constantValueRegex))
+          {
+            String[] tokens = line.split(VALUE_SUFFIX);
+            
+            // Remove any whitespace and the leading "0x"
+            String value = tokens[1].trim().substring(2);
+            
+            toStore = new Label(labelName, Integer.parseUnsignedInt(value, 16));
+            labelMapping.put(labelName, toStore);
+            continue;
+          }
 
           // For simplicity, this assembler requires labels be on their own line
-          if (!(line.matches("^" + LABEL_REGEX + "\\s*$"))) {
+          // A label is detected with the regex plus one more character, either a : or an =
+          if (!((line.matches(addressLabelRegex + "\\s*$")))) {
             throw new InstructionSyntaxError("Labels must be on their own line");
           }
           String nextLine;
@@ -223,8 +264,9 @@ public class Assembler
         }
         
         // Ignore lines which start with a label
-        // Labels are defined as whitespace, followed by a sequence of upper-case letters followed by a colon
-        if (line.matches("^" + LABEL_REGEX))
+        // Labels are defined as whitespace, followed by a sequence of upper-case letters, followed by other stuff
+        // These are syntax checked in the first pass. All we need to do is ignore them.
+        if (line.matches("^" + LABEL_REGEX + ".*"))
         {
           continue;
         }
@@ -268,7 +310,7 @@ public class Assembler
               }
               
               // Replace the label with its value
-              newLine.append(Instruction.IMMEDIATE_PREFIX + "0x" + Integer.toHexString(labelMapping.get(lastArg).getAddress()));
+              newLine.append(Instruction.IMMEDIATE_PREFIX + "0x" + Integer.toHexString(labelMapping.get(lastArg).getValue()));
               
               line = newLine.toString();
             }

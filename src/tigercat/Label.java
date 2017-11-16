@@ -17,13 +17,13 @@ public class Label
 {
   public enum Type
   {
-    ADDRESS,  // Default Label Type. One address which has no representation in the final machine code
-    DATA      // Some data (e.g., an array) which should be written to the END of the machine code
+    VALUE,  // Default Label Type. One value (address or otherwise) which has no representation in the final machine code
+    DATA    // Some data (e.g., an array) which should be written to the END of the machine code
   }
   
   protected String name;
   protected Integer size;
-  protected Integer address;
+  protected Integer value; // May be the address of the data, or a constant value
   protected Type type; 
   
   public String getName()
@@ -31,9 +31,9 @@ public class Label
     return name;
   }
 
-  public Integer getAddress()
+  public Integer getValue()
   {
-    return address;
+    return value;
   }
 
   public Integer getSize()
@@ -46,27 +46,27 @@ public class Label
     return type;
   }
 
-  public void setAddress(Integer address)
+  public void setValue(Integer value)
   {
-    this.address = address;
+    this.value = value;
   }
 
   /**
-   * Construct an address-type label, where the address is immediately known
+   * Construct an value-type label, where the value is immediately known
    * 
    * @param name The label name
-   * @param address The address to replace the name with in the machine code
+   * @param value The value to replace the name with in the machine code
    */
-  public Label(String name, Integer address)
+  public Label(String name, Integer value)
   {
     this.name = name;
-    this.address = address;
+    this.value = value;
     this.size = null; // Size is nonsensical for addresses
-    this.type = Type.ADDRESS;
+    this.type = Type.VALUE;
   }
   
   /**
-   * Construct a non-address-type label, where the address is not yet known
+   * Construct a non-data-type label, where the address is not yet known
    * 
    * @param name The Label name
    * @param size The size of the data at the Label
@@ -75,7 +75,7 @@ public class Label
   public Label(String name, Integer size, Type type)
   {
     this.name = name;
-    this.address = null;
+    this.value = null;
     this.size = size;
     this.type = type;
   }

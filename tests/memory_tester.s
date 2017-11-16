@@ -6,6 +6,8 @@
 #       this to see what pattern was being written
 # %arg1: Memory address register. Holds the current address being written
 
+MEMORY_MAX_ADDR=0x7FFFFF
+
 movd %arg1 END # Memory address register - Start writing here
 addw %a1l %a1l $0x4 # Advance two instructions past the ERROR tag (end of program plus padding)
 

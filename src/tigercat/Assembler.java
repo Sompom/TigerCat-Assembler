@@ -40,7 +40,7 @@ public class Assembler
    * A label is defined by one or more capital letters or underscores,
    * followed by LABEL_SUFFIX
    */
-  public static final String LABEL_REGEX = "\\s*[A-Z_]+";
+  public static final String LABEL_REGEX = "\\s*[A-Z_0-9]+";
   
   public Assembler()
   {

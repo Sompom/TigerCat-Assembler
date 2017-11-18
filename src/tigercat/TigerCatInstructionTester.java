@@ -689,6 +689,15 @@ public class TigerCatInstructionTester
     Byte[] expectedBytes = convertStringToBytes(expectedString);
     Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
   }
+
+  @Test
+  public void testGetRET_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("ret", true);
+
+    Instruction expected = Instruction.createInstruction("popd %IP", true);
+    Byte[] expectedBytes = expected.getMachineCode();
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
   
   @Test
   /**

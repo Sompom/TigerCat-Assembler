@@ -213,6 +213,42 @@ public class TigerCatInstructionTester
     Byte[] expectedBytes = convertStringToBytes(expectedString);
     Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
   }
+
+  @Test
+  public void testGetSLW_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("slw %r1l %a1l %a2l", true);
+
+    String expectedString = "01010  0  1  0000 0010 0011 0 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetSLW_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("slw %r1l %a1l $0x8", true);
+
+    String expectedString = "01010  0  0  0000 0010 0 0000 0000 0000 1000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetSLD_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("sld %ret1 %arg1 %arg2", true);
+
+    String expectedString = "01010  1  1  000 010 011 0000 0000 0000 0000";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
+
+  @Test
+  public void testGetSLD_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
+    Instruction toCheck = Instruction.createInstruction("sld %ret1 %arg1 $0x5", true);
+
+    String expectedString = "01010  1  0  000 010 000 0000 0000 0000 0101";
+    Byte[] expectedBytes = convertStringToBytes(expectedString);
+    Assert.assertArrayEquals(expectedBytes, toCheck.getMachineCode());
+  }
   
   @Test
   public void testGetMOVWMachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {

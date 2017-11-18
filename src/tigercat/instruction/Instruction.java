@@ -343,8 +343,8 @@ public abstract class Instruction
     }
     if (opcode.matches("^readwcc$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      // There are no plans to implement this 
+      throw new InvalidOpcodeException(opcode + " not currently in the core or assembler");
     }
     if (opcode.matches("^call$"))
     {

@@ -295,8 +295,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^sl.$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new SlInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^push.$"))
     {

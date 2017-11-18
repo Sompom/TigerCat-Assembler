@@ -282,7 +282,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^convu$"))
     {
-      // TODO: Implement
+      // There are no plans to implement this
       throw new InvalidOpcodeException("opcode not implemented: " + opcode);
     }
     if (opcode.matches("^ssr.$"))

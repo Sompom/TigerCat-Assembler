@@ -4,7 +4,7 @@ public class InvInstruction extends Instruction
 {
   static final int INV_ENCODING = 0x1F;
 
-  protected InvInstruction(String[] tokens, boolean encodingValid)
+  protected InvInstruction(String[] tokens, boolean encodingValid, Integer returnAddress)
           throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,
           InstructionSyntaxError, InvalidRegisterException, XmlLookupException {
     super(tokens, encodingValid, INV_ENCODING, TWO_ARGUMENTS);

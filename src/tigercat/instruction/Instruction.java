@@ -242,7 +242,7 @@ public abstract class Instruction
    * @throws InstructionArgumentCountException 
    * @throws InvalidDataWidthException 
    */
-  public static Instruction createInstruction(String line, boolean encodingValid)
+  public static Instruction createInstruction(String line, boolean encodingValid, Integer returnAddress)
           throws InstructionArgumentCountException,
           InvalidOpcodeException,
           InstructionSyntaxError,
@@ -254,31 +254,31 @@ public abstract class Instruction
     
     if (opcode.matches("^noop$"))
     {
-      return new NoopInstruction(tokens, encodingValid);
+      return new NoopInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^debug$"))
     {
-      return new DebugInstruction(tokens, encodingValid);
+      return new DebugInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^add.$"))
     {
-      return new AddInstruction(tokens, encodingValid);
+      return new AddInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^addc.$"))
     {
-      return new AddInstruction(tokens, encodingValid);
+      return new AddInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^sub.$"))
     {
-      return new SubInstruction(tokens, encodingValid);
+      return new SubInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^subc.$"))
     {
-      return new SubInstruction(tokens, encodingValid);
+      return new SubInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^convs$"))
     {
-      return new ConvsInstruction(tokens, encodingValid);
+      return new ConvsInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^convu$"))
     {
@@ -299,47 +299,47 @@ public abstract class Instruction
     }
     if (opcode.matches("^push.$"))
     {
-      return new PushInstruction(tokens, encodingValid);
+      return new PushInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^pop.$"))
     {
-      return new PopInstruction(tokens, encodingValid);
+      return new PopInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^mov.$"))
     {
-      return new MoveInstruction(tokens, encodingValid);
+      return new MoveInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^load.$"))
     {
-      return new LoadInstruction(tokens, encodingValid);
+      return new LoadInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^sto.$"))
     {
-      return new StoreInstruction(tokens, encodingValid);
+      return new StoreInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^and.$"))
     {
-      return new AndInstruction(tokens, encodingValid);
+      return new AndInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^or.$"))
     {
-      return new OrInstruction(tokens, encodingValid);
+      return new OrInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^xor.$"))
     {
-      return new XorInstruction(tokens, encodingValid);
+      return new XorInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^inv.$"))
     {
-      return new InvInstruction(tokens, encodingValid);
+      return new InvInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^jmp.{0,2}$"))
     {
-      return new JumpInstruction(tokens, encodingValid);
+      return new JumpInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^cmp.$"))
     {
-      return new CmpInstruction(tokens, encodingValid);
+      return new CmpInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^readwcc$"))
     {
@@ -348,8 +348,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^call$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new CallInstruction(tokens, encodingValid, returnAddress);
     }
     if (opcode.matches("^ret$"))
     {
@@ -358,6 +357,7 @@ public abstract class Instruction
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);
   }
+
   
   /**
    * Create an Instruction from the given string

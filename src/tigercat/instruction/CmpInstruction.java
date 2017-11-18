@@ -4,7 +4,7 @@ public class CmpInstruction extends Instruction
 {
   static final int CMP_ENCODING = 0x0E;
 
-  protected CmpInstruction(String[] tokens, boolean encodingValid)
+  protected CmpInstruction(String[] tokens, boolean encodingValid, Integer returnAddress)
           throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,
           InstructionSyntaxError, InvalidRegisterException, XmlLookupException {
     super(tokens, encodingValid, CMP_ENCODING, TWO_ARGUMENTS);

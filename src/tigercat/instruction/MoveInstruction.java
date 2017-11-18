@@ -4,19 +4,20 @@ import tigercat.instruction.Register.HalfReg;
 
 public class MoveInstruction extends Instruction
 {
-  Instruction[] childInstructions;
+  private Instruction[] childInstructions;
   
   @Override
   public Integer getSize()
   {
     int size = 0;
-    for (int index = 0; index < childInstructions.length; index ++)
+    for (Instruction childInstruction : childInstructions)
     {
-      size += childInstructions[index].getSize();
+      size += childInstruction.getSize();
     }
     return size;
   }
   
+  @SuppressWarnings("Duplicates")
   @Override
   public Byte[] getMachineCode() throws UnencodeableImmediateException
   {
@@ -30,19 +31,20 @@ public class MoveInstruction extends Instruction
     }
     
     current_pointer = 0;
-    for (int index = 0; index < child_encodings.length; index ++)
+    for (Byte[] child_encoding : child_encodings)
     {
-      for (int jdex = 0; jdex < child_encodings[index].length; jdex ++)
+      for (Byte aChild_encoding : child_encoding)
       {
-        toReturn[current_pointer] = child_encodings[index][jdex];
-        current_pointer ++;
+        toReturn[current_pointer] = aChild_encoding;
+        current_pointer++;
       }
     }
     
     return toReturn;
   }
 
-  public MoveInstruction(String[] tokens, boolean encodingValid)
+  @SuppressWarnings("ConstantConditions")
+  public MoveInstruction(String[] tokens, boolean encodingValid, Integer returnAddress)
           throws InvalidDataWidthException, InstructionSyntaxError, InstructionArgumentCountException,
           InvalidOpcodeException, InvalidRegisterException, XmlLookupException {
     // TODO: Top-level pseudo-instruction (dummy) constructor
@@ -53,7 +55,7 @@ public class MoveInstruction extends Instruction
       childInstructions = new Instruction[1];
       // Construct the pseudo instruction by adding the mov argument to zero and storing into the mov destination 
       String child = "addw " + tokens[1] + " " + Instruction.REGISTER_PREFIX + Argument.ZERO_REG + " " + tokens[2]; 
-      childInstructions[0] = Instruction.createInstruction(child, encodingValid);
+      childInstructions[0] = Instruction.createInstruction(child, encodingValid, returnAddress);
     }
     else if (this.dataWidth == DataWidth.DOUBLE_WORD)
     {
@@ -62,7 +64,7 @@ public class MoveInstruction extends Instruction
         // Encode moving register to register by adding immediate 0x0
         childInstructions = new Instruction[1];
         String child = "addd " + tokens[1] + " " + tokens[2] + " " +  Instruction.IMMEDIATE_PREFIX + "0x0";
-        childInstructions[0] = Instruction.createInstruction(child, encodingValid);
+        childInstructions[0] = Instruction.createInstruction(child, encodingValid, returnAddress);
       } else if (this.instructionType == DataType.IMMEDIATE)
       {
         // Decompose to two movw instructions
@@ -75,8 +77,8 @@ public class MoveInstruction extends Instruction
           String child1 = "movw %a1l %al1";
           String child2 = "movw %a1l %al1";
 
-          childInstructions[0] = Instruction.createInstruction(child1, encodingValid);
-          childInstructions[1] = Instruction.createInstruction(child2, encodingValid);
+          childInstructions[0] = Instruction.createInstruction(child1, encodingValid, returnAddress);
+          childInstructions[1] = Instruction.createInstruction(child2, encodingValid, returnAddress);
           return;
         }
         
@@ -95,8 +97,8 @@ public class MoveInstruction extends Instruction
         String child2 = "movw " + REGISTER_PREFIX + Register.ConvertDoubleRegNameToSingleReg(dest, HalfReg.UPPER_HALF_REG)
             + " " + IMMEDIATE_PREFIX + "0x" + Integer.toUnsignedString(upperImmediate, 16);
 
-        childInstructions[0] = Instruction.createInstruction(child1, encodingValid);
-        childInstructions[1] = Instruction.createInstruction(child2, encodingValid);
+        childInstructions[0] = Instruction.createInstruction(child1, encodingValid, returnAddress);
+        childInstructions[1] = Instruction.createInstruction(child2, encodingValid, returnAddress);
       } else
       {
         assert false : "Invalid Instruction Type";

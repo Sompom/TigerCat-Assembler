@@ -4,7 +4,7 @@ public class ConvsInstruction extends Instruction
 {
   static final int CONVS_ENCODING = 0x0B;
 
-  protected ConvsInstruction(String[] tokens, boolean encodingValid)
+  protected ConvsInstruction(String[] tokens, boolean encodingValid, Integer returnAddress)
           throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,
           InstructionSyntaxError, InvalidRegisterException, XmlLookupException {
     super(tokens, encodingValid, CONVS_ENCODING, TWO_ARGUMENTS);

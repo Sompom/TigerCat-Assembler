@@ -196,7 +196,7 @@ public class Assembler
 
         // If none of the other patterns, line is either an assembly code or invalid
         // If it is invalid, trying to create an instruction will throw a useful exception
-        offsetAddress += Instruction.createInstruction(line, false).getSize();
+        offsetAddress += Instruction.createInstruction(line, false, offsetAddress).getSize();
       }
       catch (InstructionSyntaxError | InstructionArgumentCountException | InvalidOpcodeException
           | InvalidRegisterException | InvalidDataWidthException | DoubleDefinedLabelException
@@ -231,8 +231,10 @@ public class Assembler
   protected byte[] secondPass(String assembly, HashMap<String, Label> labelMapping, ArrayList<AssemblerException> exceptionList)
   {
     ArrayList<Byte> machineCode = new ArrayList<Byte>();
-    int lineIndex = 0;
-    
+    int lineIndex;
+    Integer offsetAddress = MACHINE_CODE_START; // Offset from the first instruction
+
+
     //  For each line in the assembly body:
     //    Ignore lines which start with a comment. Strip comments from end-of-lines
     //    Determine if the line is a label or an instruction
@@ -265,7 +267,7 @@ public class Assembler
         
         // Ignore lines which start with a label
         // Labels are defined as whitespace, followed by a sequence of upper-case letters, followed by other stuff
-        // These are syntax checked in the first pass. All we need to do is ignore them.
+        // These are syntax checked in the first pass. All we need is to ignore them.
         if (line.matches("^" + LABEL_REGEX + ".*"))
         {
           continue;
@@ -317,9 +319,10 @@ public class Assembler
           }
         }
 
+        // don't place short circuits
         // Construct the assembly instruction
-
-        Instruction thisInstruction = Instruction.createInstruction(line, true);
+        Instruction thisInstruction = Instruction.createInstruction(line, true, offsetAddress);
+        offsetAddress += thisInstruction.getSize();
         machineCode.addAll(Arrays.asList((thisInstruction.getMachineCode())));
       }
       catch (UndefinedLabelException | UnencodeableImmediateException | InstructionArgumentCountException

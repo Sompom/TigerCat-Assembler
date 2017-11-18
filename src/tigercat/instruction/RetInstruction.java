@@ -16,14 +16,14 @@ public class RetInstruction extends Instruction
     return childInstruction.getMachineCode();
   }
   
-  protected RetInstruction(String[] tokens, boolean encodingValid)
+  protected RetInstruction(String[] tokens, boolean encodingValid, Integer returnAddress)
           throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,
           InstructionSyntaxError, InvalidRegisterException, XmlLookupException {
     super(tokens, encodingValid, 0x00, ZERO_ARGUMENTS);
 
-    String child = new String("popd %IP");
+    String child = "popd %IP";
     
-    childInstruction = Instruction.createInstruction(child, encodingValid);
+    childInstruction = Instruction.createInstruction(child, encodingValid, returnAddress);
   }
   
 }

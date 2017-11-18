@@ -16,7 +16,7 @@ public class NoopInstruction extends Instruction
     return childInstruction.getMachineCode();
   }
   
-  protected NoopInstruction(String[] tokens, boolean encodingValid)
+  protected NoopInstruction(String[] tokens, boolean encodingValid, Integer returnAddress)
           throws InvalidDataWidthException, InstructionArgumentCountException, InvalidOpcodeException,
           InstructionSyntaxError, InvalidRegisterException, XmlLookupException {
     super(tokens, encodingValid, 0x00, ZERO_ARGUMENTS);
@@ -24,7 +24,7 @@ public class NoopInstruction extends Instruction
     // Noop is encoded as an unconditionally false jump
     String child = new String("jmpf %arg1");
     
-    childInstruction = Instruction.createInstruction(child, encodingValid);
+    childInstruction = Instruction.createInstruction(child, encodingValid, returnAddress);
   }
   
 }

@@ -352,7 +352,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^ret$"))
     {
-      return new RetInstruction(tokens, encodingValid);
+      return new RetInstruction(tokens, encodingValid, returnAddress);
     }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);

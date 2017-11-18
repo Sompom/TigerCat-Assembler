@@ -12,7 +12,7 @@ MEMORY_CELLULAR_END=0x7FDBD7 # Stop testing here
 movd %arg4 MEMORY_CELLULAR_END
 
 movd %arg1 END # Memory address register - Start writing here
-addw %a1l %a1l $0x4 # Advance two instructions past the ERROR tag (end of program plus padding)
+addd %arg1 %arg1 $0x4 # Advance two instructions past the ERROR tag (end of program plus padding)
 
 movw %r1l $0x0 # Error collector. If > 0, we read something different than we wrote. That is bad.
 
@@ -34,5 +34,29 @@ SEQUENTIAL:
 SEQUENTIAL_DONE:
   debug # Once we finish this mode, pause the program
 
+# Re-initialize
+movd %arg1 END # Memory address register - Start writing here
+addd %arg1 %arg1 $0x4 # Advance two instructions past the ERROR tag (end of program plus padding)
+
+movw %r1l $0x0
+movw %r1h $0x2 # Mode 2 -> Sequential Double Word
+SEQUENTIAL_DOUBLE:
+  addd %arg1 %arg1 $0x2 # Increment address
+  # Check if we have written all we need to write
+  cmpd %arg1 %arg4
+  jmpe SEQUENTIAL_DONE
+  movd %arg2 %arg1 # Move the current address to another register
+  stod %arg1 %arg2 # Write that value to the write address
+  loadd %arg3 %arg1 # Load that value back out of memory
+  cmpd %arg3 %arg1 # Compare what was read to what was written
+  jmpz SEQUENTIAL_DOUBLE # Jump back to the start if we read and wrote the same thing
+  addw %r1l %r1l $0x1
+  debug # If we read the wrong value, halt the program
+  jmp SEQUENTIAL_DOUBLE # Let the operator continue anyway
+
+
+SEQUENTIAL_DOUBLE_DONE:
+  debug
+
 END:
-  jmpf $0x0 # Noop to allow the label to resolve
+  noop # Noop to allow the label to resolve

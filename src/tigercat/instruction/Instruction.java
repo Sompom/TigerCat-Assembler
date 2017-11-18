@@ -283,7 +283,7 @@ public abstract class Instruction
     if (opcode.matches("^convu$"))
     {
       // There are no plans to implement this
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      throw new InvalidOpcodeException(opcode + " not assembleable: Use a movw $0x0 to the top bits");
     }
     if (opcode.matches("^ssr.$"))
     {

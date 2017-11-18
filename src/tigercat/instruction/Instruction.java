@@ -287,8 +287,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^ssr.$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new SsrInstruction(tokens, encodingValid);
     }
     if (opcode.matches("^sur.$"))
     {

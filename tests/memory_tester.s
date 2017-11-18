@@ -44,7 +44,7 @@ SEQUENTIAL_DOUBLE:
   addd %arg1 %arg1 $0x2 # Increment address
   # Check if we have written all we need to write
   cmpd %arg1 %arg4
-  jmpe SEQUENTIAL_DONE
+  jmpbe SEQUENTIAL_DOUBLE_DONE
   movd %arg2 %arg1 # Move the current address to another register
   stod %arg1 %arg2 # Write that value to the write address
   loadd %arg3 %arg1 # Load that value back out of memory

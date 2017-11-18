@@ -121,8 +121,27 @@ CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
 
 
 
+# Choose some random memory address
+movd %arg1 $0xD000
 
+stow %a1l $0x4865 # "He"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x6C6C # "ll"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x6F20 # "o "
+addd %arg1 %arg1 $0x1
+stow %a1l $0x576F # "Wo"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x726C # "rl"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x6400 # "d\0"
 
+# Call Error Print
+movd %arg1 $0xD000
+movw %a2l $0xFF
+#call ERROR_PRINT
+jmp ERROR_PRINT
+debug
 
 # Error Print
 # Read a string starting from %arg1 and put it on the screen
@@ -138,10 +157,10 @@ ERROR_PRINT:
   # %arg3 - Destination address into the ASCII section
 
   movd %arg3 VGA_TEXT_BASE_ADDR # Prepare the text pointer
-  slw %a2l $0x8 # Prepare the text colour
+  slw %a2l %a2l $0x8 # Prepare the text colour
 
   ERROR_PRINT_LOOP_UNTIL_NULL:
-    loadw %a1l %s1l
+    loadw %s1l %a1l
     # Get the first character (upper half of %s1l)
     andw %s1h %s1l $0xFF00 # Mask
     surw %s1h %s1h $0x8    # Move into position
@@ -151,7 +170,7 @@ ERROR_PRINT:
     # Colourize the character
     orw %s1h %s1h %a2l
     # Write the character to the screen
-    stow %s1h %a3l
+    stow %a3l %s1h
     # Increment the text pointer
     addd %arg3 %arg3 $0x1
     # Get the second character (lower half of %s1l)
@@ -162,10 +181,11 @@ ERROR_PRINT:
     # Colourize the character
     orw %s1h %s1h %a2l
     # Write the character to the screen
-    stow %s1h %a3l
+    stow %a3l %s1h
     # Increment the text pointer
     addd %arg3 %arg3 $0x1
     # TODO: Properly loop %arg3 after every 80 characters to write multiple lines
+    addd %arg1 %arg1 $0x1 # Advance the input pointer
     jmp ERROR_PRINT_LOOP_UNTIL_NULL
 
   ERROR_PRINT_FINISHED:

@@ -353,8 +353,7 @@ public abstract class Instruction
     }
     if (opcode.matches("^ret$"))
     {
-      // TODO: Implement
-      throw new InvalidOpcodeException("opcode not implemented: " + opcode);
+      return new RetInstruction(tokens, encodingValid);
     }
 
     throw new InvalidOpcodeException("Unable to create instruction from: " + line);

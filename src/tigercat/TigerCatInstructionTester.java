@@ -750,8 +750,8 @@ public class TigerCatInstructionTester
   
   @Test
   public void testGetCALLD_Imm_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
-    Instruction toCheck = Instruction.createInstruction("call $0xAAA", true, 21);
-    Instruction child1 = Instruction.createInstruction("pushd $0x15", true, 0);
+    Instruction toCheck = Instruction.createInstruction("call $0xAAA", true, 0x21);
+    Instruction child1 = Instruction.createInstruction("pushd $0x25", true, 0);
     Instruction child2 = Instruction.createInstruction("jmp $0xAAA", true, 0);
 
     ArrayList<Byte> expected = new ArrayList<>();
@@ -763,8 +763,8 @@ public class TigerCatInstructionTester
 
   @Test
   public void testGetCALLD_Reg_MachineCode() throws InstructionArgumentCountException, InvalidOpcodeException, InstructionSyntaxError, InvalidRegisterException, InvalidDataWidthException, UnencodeableImmediateException, XmlLookupException {
-    Instruction toCheck = Instruction.createInstruction("call %ret1", true, 21);
-    Instruction child1 = Instruction.createInstruction("pushd $0x15", true, 0);
+    Instruction toCheck = Instruction.createInstruction("call %ret1", true, 0x21);
+    Instruction child1 = Instruction.createInstruction("pushd $0x25", true, 0);
     Instruction child2 = Instruction.createInstruction("jmp %ret1", true, 0);
 
     ArrayList<Byte> expected = new ArrayList<>();

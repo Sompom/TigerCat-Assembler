@@ -58,7 +58,7 @@ public class CallInstruction extends Instruction
       String child2 = "jmp " + tokens[1];
 
       childInstructions[0] = Instruction.createInstruction(child1, encodingValid, returnAddress);
-      childInstructions[0] = Instruction.createInstruction(child2, encodingValid, returnAddress);
+      childInstructions[1] = Instruction.createInstruction(child2, encodingValid, returnAddress);
     } else if (this.instructionType == DataType.IMMEDIATE)
     {
       // Decompose to two a push and a jmp
@@ -76,7 +76,7 @@ public class CallInstruction extends Instruction
         return;
       }
 
-      String child1 = "push " + IMMEDIATE_PREFIX + "0x" + Integer.toHexString(returnAddress + 4);
+      String child1 = "pushd " + IMMEDIATE_PREFIX + "0x" + Integer.toHexString(returnAddress + 4);
       String child2 = "jmp " + tokens[1];
 
       childInstructions[0] = Instruction.createInstruction(child1, encodingValid, returnAddress);

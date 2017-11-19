@@ -405,6 +405,9 @@ public abstract class Instruction
         } else if (opcode.matches("^convs$"))
         {
           this.dataWidth = DataWidth.SINGLE_WORD;
+        } else if (opcode.matches("^call$"))
+        {
+          this.dataWidth = DataWidth.DOUBLE_WORD;
         }
         else
         {

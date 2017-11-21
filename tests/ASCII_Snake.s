@@ -51,6 +51,12 @@ jmp INIT #TODO: MAKE INIT
 VGA_TEXT_BASE_ADDR=0x7FE000 # Stuff written starting here will be drawn to the screen
 CONTROLLER_1_READ_ADDR=0x7FDBDB # Read from controller 1 here
 CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
+GAME_BOARD_BASE_ADDR=0x3F0000 # Game board starts here
+# Game Board is a 128x64 array of words, so goes until 0x3F1FFF
+SNAKE_1_BASE_ADDR=0x3F2000 # Player 1 snake starts here
+# Snakes are, at the very largest, < 4096, so the end of snake 1 is 0x3F2FFF
+SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here
+# Snakes are, at the very largest, < 4096, so the end of snake 2 is 0x3F3FFF
 GAME_TICK_VALUE=0X100 #time in between ticks
 # TODO: game board base address
 # End constants

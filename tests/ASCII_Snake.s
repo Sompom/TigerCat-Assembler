@@ -4,6 +4,9 @@
 # Description : This is a two-player Snake game for the TigerCat architecture
 #
 
+# ALWAYS:
+jmp INIT #TODO: MAKE INIT
+
 # Coding syle suggestions:
 # - Use very verbose label names. There is no scoping, so using simple names
 #   like "LOOP" will quickly get confusing
@@ -48,6 +51,7 @@
 VGA_TEXT_BASE_ADDR=0x7FE000 # Stuff written starting here will be drawn to the screen
 CONTROLLER_1_READ_ADDR=0x7FDBDB # Read from controller 1 here
 CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
+GAME_TICK_VALUE=0X100 #time in between ticks
 # TODO: game board base address
 # End constants
 
@@ -110,6 +114,61 @@ CONTROLLER_READ:
   loadd %ret1 %arg1
   loadd %ret2 %arg2
   ret
+
+
+###### START ASSEMBLY ######
+
+#### Init
+INIT:
+
+  jmp MAIN_GAME_LOOP
+
+#### Main Game Loop
+MAIN_GAME_LOOP:
+  ## game tick
+  movw %arg1 GAME_TICK_VALUE
+  GAME_TICK_DELAY:
+    subw %arg1 %arg1 $0X100
+    cmpw %arg1 $0x0
+    jmpg GAME_TICK_DELAY
+  # end GAME_TICK_DELAY
+
+  ### Player control
+  #   read the controllers
+  #     query the controller module
+  #     return the two players' directions in the two return regs
+  #   update head direction
+  #     If there's no input, the head direction should not be changed
+  #     Prevent the player from going backwards
+  #     Go to the player snake addresses and change the head direction 
+
+
+
+  jmp MAIN_GAME_LOOP
+# end MAIN_GAME_LOOP
+
+
+# Choose some random memory address
+movd %arg1 $0xD000
+
+stow %a1l $0x4865 # "He"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x6C6C # "ll"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x6F20 # "o "
+addd %arg1 %arg1 $0x1
+stow %a1l $0x576F # "Wo"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x726C # "rl"
+addd %arg1 %arg1 $0x1
+stow %a1l $0x6400 # "d\0"
+
+# Call Error Print
+movd %arg1 $0xD000
+movw %a2l $0xFF
+#call ERROR_PRINT
+jmp ERROR_PRINT
+debug
 
 # Error Print
 # Read a string starting from %arg1 and put it on the screen

@@ -95,27 +95,63 @@ CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
 #      push to VGA
 #        repeat
 
-# Choose some random memory address
-movd %arg1 $0xD000
+DUMMY_LOOP:
+  call CONTROLLER_READ
 
-stow %a1l $0x4865 # "He"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x6C6C # "ll"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x6F20 # "o "
-addd %arg1 %arg1 $0x1
-stow %a1l $0x576F # "Wo"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x726C # "rl"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x6400 # "d\0"
+  # Choose some random memory address
+  movd %arg1 $0xD000
 
-# Call Error Print
-movd %arg1 $0xD000
-movw %a2l $0xFF
-#call ERROR_PRINT
-jmp ERROR_PRINT
-debug
+  stow %a1l $0x4865 # "He"
+  addd %arg1 %arg1 $0x1
+  stow %a1l $0x6C6C # "ll"
+  addd %arg1 %arg1 $0x1
+  stow %a1l $0x6F20 # "o "
+  addd %arg1 %arg1 $0x1
+  stow %a1l $0x576F # "Wo"
+  addd %arg1 %arg1 $0x1
+  stow %a1l $0x726C # "rl"
+  addd %arg1 %arg1 $0x1
+  stow %a1l $0x6420 # "d "
+  addd %arg1 %arg1 $0x1
+
+  # Append the controller data
+  addw %r1l %r1l $0x3030 # Add ASCII '0' to get a number on the print
+  addw %r1h %r1h $0x3030 # Add ASCII '0' to get a number on the print
+  addw %r2h %r2h $0x3030 # Add ASCII '0' to get a number on the print
+  addw %r2l %r2l $0x3030 # Add ASCII '0' to get a number on the print
+
+  stow %a1l %r1h
+  addd %arg1 %arg1 $0x1
+  stow %a1l %r1l
+  addd %arg1 %arg1 $0x1
+  stow %a1l %r2h
+  addd %arg1 %arg1 $0x1
+  stow %a1l %r2l
+  addd %arg1 %arg1 $0x1
+  stow %a1l $0x0000 # "\0\0"
+
+  # Call Error Print
+  movd %arg1 $0xD000
+  movw %a2l $0xFF
+  call ERROR_PRINT
+  jmp DUMMY_LOOP
+
+
+# Controller Read
+# Read from both controllers, put their outputs into %ret1 and %ret2
+# Arguments:
+# None
+# Return:
+# %ret1: Controller 1 value
+# %ret2: Controller 2 value
+CONTROLLER_READ:
+  movd %arg1 CONTROLLER_1_READ_ADDR
+  movd %arg2 CONTROLLER_2_READ_ADDR
+
+  stow %a1l %a1l # Writing anything to either controller region sends a reset to the controller controller hardware (Should, anyway. Is currently broken in hardware)
+  loadd %ret1 %arg1
+  loadd %ret2 %arg2
+  ret
 
 # Error Print
 # Read a string starting from %arg1 and put it on the screen

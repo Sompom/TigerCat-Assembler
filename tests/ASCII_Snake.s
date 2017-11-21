@@ -147,10 +147,7 @@ GAME_TICK_VALUE=0x100 #time in between ticks
 # void
 INIT:
   # Write zeros to the entire game board to mark everything as empty
-  movd %arg1 GAME_BOARD_BASE_ADDR
-  movd %arg2 GAME_BOARD_LENGTH
-  movw %a3l $0x0
-  call MEMCPY_WORD
+  call GAME_BOARD_EMPTY
   # Write zeros to the entire snake 1 to mark every segment as inactive
   movd %arg1 SNAKE_1_BASE_ADDR
   movd %arg2 SNAKE_LENGTH
@@ -185,7 +182,22 @@ MEMCPY_WORD:
     cmpd %arg1 %arg4
     jmpa MEMCPY_WORD_LOOP # arg4 >? arg1
     ret
-  
+
+
+# Game Board Empty
+# Clear the entire game board
+# Arguments:
+# None
+# Return:
+# void
+GAME_BOARD_EMPTY:
+  movd %arg1 GAME_BOARD_BASE_ADDR
+  movd %arg2 GAME_BOARD_LENGTH
+  movw %a3l $0x0
+  call MEMCPY_WORD
+  ret
+
+
 #### Main Game Loop
 MAIN_GAME_LOOP:
   ## game tick

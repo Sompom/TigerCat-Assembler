@@ -46,6 +46,26 @@ jmp INIT #TODO: MAKE INIT
 
 # The game board is a 2D array of board_data
 
+# Bits Description:
+#        A       --> buttons[1]
+#        B       --> buttons[2]
+#        Z       --> buttons[3]
+#        Start   --> buttons[4]
+#        Up      --> buttons[5]
+#        Down    --> buttons[6]
+#        Left    --> buttons[7]
+#        Right   --> buttons[8]
+#        N/A     --> buttons[9]
+#        N/A     --> buttons[10]
+#        L       --> buttons[11]
+#        R       --> buttons[12]
+#        C-UP    --> buttons[13]
+#        C-DOWN  --> buttons[14]
+#        C-Left  --> buttons[15]
+#        C-Right --> buttons[16]
+#        X-Axis  --> buttons[24:17]
+#        Y-Axis  --> buttons[32:25]
+
 
 # Define your constants here!
 VGA_TEXT_BASE_ADDR=0x7FE000 # Stuff written starting here will be drawn to the screen
@@ -105,22 +125,6 @@ GAME_TICK_VALUE=0X100 #time in between ticks
 #      push to VGA
 #        repeat
 
-# Controller Read
-# Read from both controllers, put their outputs into %ret1 and %ret2
-# Arguments:
-# None
-# Return:
-# %ret1: Controller 1 value
-# %ret2: Controller 2 value
-CONTROLLER_READ:
-  movd %arg1 CONTROLLER_1_READ_ADDR
-  movd %arg2 CONTROLLER_2_READ_ADDR
-
-  stow %a1l %a1l # Writing anything to either controller region sends a reset to the controller controller hardware (Should, anyway. Is currently broken in hardware)
-  loadd %ret1 %arg1
-  loadd %ret2 %arg2
-  ret
-
 
 ###### START ASSEMBLY ######
 
@@ -148,33 +152,32 @@ MAIN_GAME_LOOP:
   #     Prevent the player from going backwards
   #     Go to the player snake addresses and change the head direction 
 
+  ## Update head direction
+
+
 
 
   jmp MAIN_GAME_LOOP
 # end MAIN_GAME_LOOP
 
 
-# Choose some random memory address
-movd %arg1 $0xD000
+# Controller Read
+# Read from both controllers, put their outputs into %ret1 and %ret2
+# Arguments:
+# None
+# Return:
+# %ret1: Controller 1 value
+# %ret2: Controller 2 value
+CONTROLLER_READ:
+  movd %arg1 CONTROLLER_1_READ_ADDR
+  movd %arg2 CONTROLLER_2_READ_ADDR
 
-stow %a1l $0x4865 # "He"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x6C6C # "ll"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x6F20 # "o "
-addd %arg1 %arg1 $0x1
-stow %a1l $0x576F # "Wo"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x726C # "rl"
-addd %arg1 %arg1 $0x1
-stow %a1l $0x6400 # "d\0"
+  stow %a1l %a1l # Writing anything to either controller region sends a reset to the controller controller hardware (Should, anyway. Is currently broken in hardware)
+  loadd %ret1 %arg1
+  loadd %ret2 %arg2
+  ret
 
-# Call Error Print
-movd %arg1 $0xD000
-movw %a2l $0xFF
-#call ERROR_PRINT
-jmp ERROR_PRINT
-debug
+
 
 # Error Print
 # Read a string starting from %arg1 and put it on the screen

@@ -72,6 +72,7 @@ jmp INIT #TODO: MAKE INIT
 VGA_TEXT_BASE_ADDR=0x7FE000 # Stuff written starting here will be drawn to the screen
 CONTROLLER_1_READ_ADDR=0x7FDBDB # Read from controller 1 here
 CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
+
 GAME_BOARD_BASE_ADDR=0x3F0000 # Game board starts here
 GAME_BOARD_LENGTH=0x2000
 # Game Board is a 128x64 array of words, so goes until 0x3F1FFF
@@ -81,6 +82,11 @@ SNAKE_2_BASE_ADDR=0x3F4000 # Player 2 snake starts here
 # Snakes are, at the very largest, < 4096, so the end of snake 2 is 0x3F3FFF
 SNAKE_LENGTH=0x2000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
+
+GAME_BOARD_SIDE_BORDERS=0x2 # Width of walls on the left and right side
+GAME_BOARD_BOTTOM_BORDER=0x2 # Width of walls on the bottom of the game board
+GAME_BOARD_TOP_BORDER=0x5 # Width of walls on the top of the game board
+
 GAME_TICK_VALUE=0x100 #time in between ticks
 # TODO: game board base address
 # End constants
@@ -168,6 +174,8 @@ INIT:
 # %arg1: Base address
 # %arg2: Number of WORDs to write
 # %a3l: Constant value to write
+# Return:
+# void
 MEMCPY_WORD:
   addd %arg4 %arg1 %arg2 # Setup arg4 as the end address
   MEMCPY_WORD_LOOP:

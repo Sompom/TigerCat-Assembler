@@ -41,7 +41,7 @@
 #                   4 = wall}
 # 4 bits (even though we only need 3)
 
-# The game board is an array of board_data
+# The game board is a 2D array of board_data
 
 
 # Define your constants here!
@@ -90,36 +90,10 @@ CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
 #
 
 ### Display
-#		Read memory model unit
-#			colorize character
-#			push to VGA
-#	      repeat
-
-
-
-# Game data 
-
-#Snake data is represented as an array of this data starting at a player-specific address
-#Snake storage data
-#{active,  L R U D,  column, row}
-#[15]	,  [14:13],  [12:6], [5:0]
-#
-#Take this data and read it into the game board before printing the board
-
-### Game board
-
-#Board Column and row locations represented by arbitrary address in cellular ram
-
-#enum board_data: {	0 = empty
-#					1 = food
-#					2 = blue snake
-#					3 = orange snake
-#					4 = wall}
-# 4 bits (even though we only need 3)
-
-# The game board is an array of board_data
-
-
+#    Read memory model unit
+#      colorize character
+#      push to VGA
+#        repeat
 
 # Choose some random memory address
 movd %arg1 $0xD000

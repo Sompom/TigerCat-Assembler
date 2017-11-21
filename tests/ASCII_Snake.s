@@ -26,7 +26,7 @@
 #Snake data is represented as an array of this data starting at a player-specific address
 #Snake storage data
 #{active,  L R U D,  column, row}
-#[15]	,  [14:13],  [12:6], [5:0]
+#[15]  ,  [14:13],  [12:6], [5:0]
 #
 #Take this data and read it into the game board before printing the board
 
@@ -34,11 +34,11 @@
 
 #Board Column and row locations represented by arbitrary address in cellular ram
 
-#enum board_data: {	0 = empty
-#					1 = food
-#					2 = blue snake
-#					3 = orange snake
-#					4 = wall}
+#enum board_data: { 0 = empty
+#                   1 = food
+#                   2 = blue snake
+#                   3 = orange snake
+#                   4 = wall}
 # 4 bits (even though we only need 3)
 
 # The game board is an array of board_data
@@ -54,39 +54,39 @@ CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
 ##### Main game loop
 #
 ### Player control
-#		read the controllers
-#			query the controller module
-#			return the two players' directions in the two return regs
-#		update head direction
-#			If there's no input, the head direction should not be changed
-#			Prevent the player from going backwards
-#			Go to the player snake addresses and change the head direction
+#     read the controllers
+#       query the controller module
+#       return the two players' directions in the two return regs
+#     update head direction
+#       If there's no input, the head direction should not be changed
+#       Prevent the player from going backwards
+#       Go to the player snake addresses and change the head direction
 #
 ### snake changes (dying/eating)
-#		Get the head's next position and use it for comparisons
-#			Check against the other snake's future head
-#				If they're the same: kill both snakes
+#    Get the head's next position and use it for comparisons
+#      Check against the other snake's future head
+#        If they're the same: kill both snakes
 #
-#		collisions with snakes and walls and food
-#			scan the game board for overlaps of the heads with anything else
-#				Eating logic (collision with food)
-#					copy the tail segment backwards one (will get shuffled as normal)
-#				Wall collisions
-#					kill the snake
-#				Snake collisions
-#					Kill the snake that has it's head in the other's tail
-#			
-#		update scores
-#			+100 for eating food
-#			+1 for game tick
-#			=0 for dying
+#    collisions with snakes and walls and food
+#      scan the game board for overlaps of the heads with anything else
+#        Eating logic (collision with food)
+#          copy the tail segment backwards one (will get shuffled as normal)
+#        Wall collisions
+#          kill the snake
+#        Snake collisions
+#          Kill the snake that has it's head in the other's tail
+#      
+#    update scores
+#      +100 for eating food
+#      +1 for game tick
+#      =0 for dying
 #
 ### snake movement
-#		shuffle along snake segments
-#			For each segment of each player
-#				increment its position in the direction it's facing
-#				change each segment's direction to be the direction of the piece in front of it
-#					ignore the head for this
+#     shuffle along snake segments
+#       For each segment of each player
+#         increment its position in the direction it's facing
+#         change each segment's direction to be the direction of the piece in front of it
+#           ignore the head for this
 #
 
 ### Display

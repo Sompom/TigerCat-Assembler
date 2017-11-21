@@ -160,7 +160,7 @@ ERROR_PRINT:
     addd %arg3 %arg3 $0x1
     # TODO: Properly loop %arg3 after every 80 characters to write multiple lines
     addd %arg1 %arg1 $0x1 # Advance the input pointer
-    jmp ERROR_PRINT_LOOP_UNTIL_NULL
+    call ERROR_PRINT_LOOP_UNTIL_NULL
 
   ERROR_PRINT_FINISHED:
     ret

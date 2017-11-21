@@ -27,9 +27,10 @@ jmp INIT #TODO: MAKE INIT
 # Game data 
 
 #Snake data is represented as an array of this data starting at a player-specific address
-#Snake storage data
-#{active,  L R U D,  column, row}
-#[15]  ,  [14:13],  [12:6], [5:0]
+#Snake storage data:
+# Double-word:
+# {unused, active,  L R U D,  column, row}
+# [31:17], [16]  ,  [15:14],  [13:6], [5:0]
 #
 #Take this data and read it into the game board before printing the board
 

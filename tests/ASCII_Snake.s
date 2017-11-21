@@ -130,9 +130,33 @@ GAME_TICK_VALUE=0x100 #time in between ticks
 
 ###### START ASSEMBLY ######
 
-#### Init
+# Init
+# Initializes the game board and the two player snakes
+# Arguments:
+# None
+# Return:
+# void
 INIT:
-
+  # Write zeros to the entire game board to mark everything as empty
+  movd %arg1 GAME_BOARD_BASE_ADDR
+  movd %arg2 GAME_BOARD_LENGTH
+  movw %a3l $0x0
+  call MEMCPY_WORD
+  # Write zeros to the entire snake 1 to mark every segment as inactive
+  movd %arg1 SNAKE_1_BASE_ADDR
+  movd %arg2 SNAKE_LENGTH
+  movw %a3l $0x0
+  call MEMCPY_WORD
+  # Write zeros to the entire snake 2 to mark every segment as inactive
+  movd %arg1 SNAKE_2_BASE_ADDR
+  movd %arg2 SNAKE_LENGTH
+  movw %a3l $0x0
+  call MEMCPY_WORD
+  
+  # Create brand-new baby snakes
+  # Put the walls onto the in-memory game board
+  # Put the snakes onto the in-memory game board
+  # Randomly generate a food location and put it on the board
   jmp MAIN_GAME_LOOP
 
 # memcpy

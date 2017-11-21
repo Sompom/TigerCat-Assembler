@@ -135,6 +135,22 @@ INIT:
 
   jmp MAIN_GAME_LOOP
 
+# memcpy
+# Write a range of memory with a constant value
+# If arg2 is zero, this method will misbehave
+# Arguments:
+# %arg1: Base address
+# %arg2: Number of WORDs to write
+# %a3l: Constant value to write
+MEMCPY_WORD:
+  addd %arg4 %arg1 %arg2 # Setup arg4 as the end address
+  MEMCPY_WORD_LOOP:
+    stow %a1l %a3l
+    addd %arg1 %arg1 $0x1
+    cmpd %arg1 %arg4
+    jmpa MEMCPY_WORD_LOOP # arg4 >? arg1
+    ret
+  
 #### Main Game Loop
 MAIN_GAME_LOOP:
   ## game tick

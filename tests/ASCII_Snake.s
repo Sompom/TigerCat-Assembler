@@ -88,6 +88,12 @@ GAME_BOARD_SIDE_BORDERS=0x2 # Width of walls on the left and right side
 GAME_BOARD_BOTTOM_BORDER=0x2 # Width of walls on the bottom of the game board
 GAME_BOARD_TOP_BORDER=0x5 # Width of walls on the top of the game board
 
+GAME_BOARD_EMPTY=0x0
+GAME_BOARD_FOOD=0x1
+GAME_BOARD_BLUE_SNAKE=0x2
+GAME_BOARD_ORANGE_SNAKE=0x3
+GAME_BOARD_WALLS=0x4
+
 GAME_TICK_VALUE=0x100 #time in between ticks
 # TODO: game board base address
 # End constants
@@ -147,7 +153,7 @@ GAME_TICK_VALUE=0x100 #time in between ticks
 # void
 INIT:
   # Write zeros to the entire game board to mark everything as empty
-  call GAME_BOARD_EMPTY
+  call EMPTY_GAME_BOARD
   # Write zeros to the entire snake 1 to mark every segment as inactive
   movd %arg1 SNAKE_1_BASE_ADDR
   movd %arg2 SNAKE_LENGTH
@@ -188,19 +194,19 @@ MEMCPY_WORD:
 #End MEMCPY_WORD
 
 
-# Game Board Empty
+# Empty Game Board
 # Clear the entire game board
 # Arguments:
 # None
 # Return:
 # void
-GAME_BOARD_EMPTY:
+EMPTY_GAME_BOARD:
   movd %arg1 GAME_BOARD_BASE_ADDR
   movd %arg2 GAME_BOARD_LENGTH
   movw %a3l $0x0
   call MEMCPY_WORD
   ret
-# End GAME_BOARD_EMPTY
+# End EMPTY_GAME_BOARD
 
 
 

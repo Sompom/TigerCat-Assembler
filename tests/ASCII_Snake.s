@@ -167,6 +167,7 @@ GAME_TICK_VALUE=0x100 #time in between ticks
 INIT:
   # Write zeros to the entire game board to mark everything as empty
   call EMPTY_GAME_BOARD
+
   # Write zeros to the entire snake 1 to mark every segment as inactive
   movd %arg1 SNAKE_1_BASE_ADDR
   movd %arg2 SNAKE_LENGTH
@@ -278,7 +279,7 @@ COPY_GAME_BOARD_TO_VGA:
   addd %arg4 %arg1 GAME_BOARD_LENGTH # Load up the end address
   COPY_GAME_BOARD_TO_VGA_LOOP:
     movw %r1l $0x0 # %r1l will be the colourized piece to draw
-    loadw %a1l %r1h # Load the next board piece
+    loadw %r1h %a1l # Load the next board piece
     cmpw %r1h GAME_BOARD_EMPTY
     jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_EMPTY
     cmpw %r1h GAME_BOARD_FOOD
@@ -314,8 +315,9 @@ COPY_GAME_BOARD_TO_VGA:
 
     COPY_GAME_BOARD_TO_VGA_DOIT:
       slw %r2l %r2l $0x8 # Shift the colour into position
+      orw %r1l %r1l %r2l
       # Do the actual copy
-      stow %r1l %a2l
+      stow %a2l %r1l
     # End COPY_GAME_BOARD_TO_VGA_DOIT
     addd %arg1 %arg1 $0x1
     addd %arg2 %arg2 $0x1

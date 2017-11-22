@@ -72,6 +72,16 @@ public class Assembler
       printExceptions(exceptionList);
       exit(1);
     }
+    
+    String[] orderedLabels = new String[labelMapping.keySet().size()];
+    labelMapping.keySet().toArray(orderedLabels);
+    Arrays.sort(orderedLabels);
+    
+    for (String labelName : orderedLabels)
+    {
+      System.out.println(labelName + ": 0x" + Integer.toHexString(labelMapping.get(labelName).getValue()));
+    }
+    
     return machineCode;
   }
   

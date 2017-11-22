@@ -332,10 +332,10 @@ COPY_GAME_BOARD_TO_VGA:
 #### Main Game Loop
 MAIN_GAME_LOOP:
   ## game tick
-  movw %arg1 GAME_TICK_VALUE
+  movd %arg1 GAME_TICK_VALUE
   GAME_TICK_DELAY:
-    subw %arg1 %arg1 $0X100
-    cmpw %arg1 $0x0
+    subd %arg1 %arg1 $0x100
+    cmpd %arg1 $0x0
     jmpg GAME_TICK_DELAY
   # end GAME_TICK_DELAY
 

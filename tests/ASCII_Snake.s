@@ -164,6 +164,8 @@ INIT:
   # Put the snakes onto the in-memory game board
   # Randomly generate a food location and put it on the board
   jmp MAIN_GAME_LOOP
+#End INIT
+
 
 # memcpy
 # Write a range of memory with a constant value
@@ -182,6 +184,8 @@ MEMCPY_WORD:
     cmpd %arg1 %arg4
     jmpa MEMCPY_WORD_LOOP # arg4 >? arg1
     ret
+  #End MEMCPY_WORD_LOOP
+#End MEMCPY_WORD
 
 
 # Game Board Empty
@@ -196,6 +200,8 @@ GAME_BOARD_EMPTY:
   movw %a3l $0x0
   call MEMCPY_WORD
   ret
+# End GAME_BOARD_EMPTY
+
 
 
 #### Main Game Loop

@@ -180,6 +180,7 @@ INIT:
   
   # Create brand-new baby snakes
   # Put the walls onto the in-memory game board
+  call GAME_BOARD_ADD_WALLS
   # Put the snakes onto the in-memory game board
   # Randomly generate a food location and put it on the board
   jmp MAIN_GAME_LOOP
@@ -221,6 +222,40 @@ EMPTY_GAME_BOARD:
   ret
 # End EMPTY_GAME_BOARD
 
+
+# Game Board Add Walls
+# Put the walls on the game board
+# Uses the widths defined as constants
+# Arguments:
+# None
+# Return:
+# void
+GAME_BOARD_ADD_WALLS:
+  movd %arg1 GAME_BOARD_BASE_ADDR # Load up the base address
+  # Put walls at the top
+  
+  # Use this counter to keep track of the number of top borders we need to draw
+  movw %r1l GAME_BOARD_TOP_BORDER
+  
+  GAME_BOARD_ADD_WALLS_TOP_LOOP:
+    # Since the walls at the top are contiguous, we can just write a large region...
+    # Each row is 128 words long = 0x80
+    movd %arg2 $0x80
+    movw %a1h GAME_BOARD_WALL
+    pushw %r1l # Save a register!
+    call MEMCPY_WORD
+    popw %r1l
+    addd %arg1 %arg1 %arg2 # Increment the base address to the next row
+    subw %r1l %r1l $0x1
+    cmpw %r1l $0x0
+    jmpb GAME_BOARD_ADD_WALLS_TOP_LOOP # $0x0 <? %r1l
+    
+  # Put walls on the sides
+  
+  # Put walls at the bottom
+  
+  ret
+#End GAME_BOARD_ADD_WALLS
 
 
 #### Main Game Loop

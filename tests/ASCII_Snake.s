@@ -183,6 +183,7 @@ INIT:
   call GAME_BOARD_ADD_WALLS
   # Put the snakes onto the in-memory game board
   # Randomly generate a food location and put it on the board
+  call COPY_GAME_BOARD_TO_VGA
   jmp MAIN_GAME_LOOP
 #End INIT
 
@@ -256,6 +257,73 @@ GAME_BOARD_ADD_WALLS:
   
   ret
 #End GAME_BOARD_ADD_WALLS
+
+
+# Copy Game Board to VGA
+# Convert the in-memory game board to ASCII and push it to the VGA
+# Arguments:
+# None
+# Return:
+# void
+COPY_GAME_BOARD_TO_VGA:
+  # Interesting Registers:
+  # %r1l - The final, colourized piece
+  # %r1h - Register used to load the value from the game board
+  # %r2l - Used to hold the colour for colourizing the piece
+  # %arg1 - Store the address we are working on in the game board
+  # %arg2 - Store the next address to write in the VGA
+  # %arg4 - Store the end address of the game board, to know when we are done
+  movd %arg1 GAME_BOARD_BASE_ADDR # Load up the base address
+  movd %arg2 VGA_TEXT_BASE_ADDR
+  addd %arg4 %arg1 GAME_BOARD_LENGTH # Load up the end address
+  COPY_GAME_BOARD_TO_VGA_LOOP:
+    movw %r1l $0x0 # %r1l will be the colourized piece to draw
+    loadw %a1l %r1h # Load the next board piece
+    cmpw %r1h GAME_BOARD_EMPTY
+    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_EMPTY
+    cmpw %r1h GAME_BOARD_FOOD
+    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_FOOD
+    cmpw %r1h GAME_BOARD_BLUE_SNAKE
+    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_BLUE_SNAKE
+    cmpw %r1h GAME_BOARD_ORANGE_SNAKE
+    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_ORANGE_SNAKE
+    cmpw %r1h GAME_BOARD_WALL
+    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_WALL
+
+    COPY_GAME_BOARD_TO_VGA_PREPARE_EMPTY:
+      movw %r2l EMPTY_COLOUR
+      movw %r1l EMPTY_ASCII_VALUE
+      jmp COPY_GAME_BOARD_TO_VGA_DOIT
+
+    COPY_GAME_BOARD_TO_VGA_PREPARE_FOOD:
+      # TODO: Implement
+      jmp COPY_GAME_BOARD_TO_VGA_DOIT
+
+    COPY_GAME_BOARD_TO_VGA_PREPARE_BLUE_SNAKE:
+      # TODO: Implement
+      jmp COPY_GAME_BOARD_TO_VGA_DOIT
+
+    COPY_GAME_BOARD_TO_VGA_PREPARE_ORANGE_SNAKE:
+      # TODO: Implement
+      jmp COPY_GAME_BOARD_TO_VGA_DOIT
+
+    COPY_GAME_BOARD_TO_VGA_PREPARE_WALL:
+      movw %r2l WALL_COLOUR
+      movw %r1l WALL_ASCII_VALUE
+      jmp COPY_GAME_BOARD_TO_VGA_DOIT
+
+    COPY_GAME_BOARD_TO_VGA_DOIT:
+      slw %r2l %r2l $0x8 # Shift the colour into position
+      # Do the actual copy
+      stow %r1l %a2l
+    # End COPY_GAME_BOARD_TO_VGA_DOIT
+    addd %arg1 %arg1 $0x1
+    addd %arg2 %arg2 $0x1
+    cmpd %arg4 %arg1
+    jmpb COPY_GAME_BOARD_TO_VGA_LOOP # arg1 <? arg4
+  # End COPY_GAME_BOARD_TO_VGA_LOOP
+  ret
+# End COPY_GAME_BOARD_TO_VGA
 
 
 #### Main Game Loop

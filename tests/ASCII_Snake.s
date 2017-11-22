@@ -48,6 +48,7 @@ jmp INIT #TODO: MAKE INIT
 # The game board is a 2D array of board_data
 
 # Bits Description:
+#        (stop)  --> buttons[0]
 #        A       --> buttons[1]
 #        B       --> buttons[2]
 #        Z       --> buttons[3]
@@ -348,12 +349,16 @@ MAIN_GAME_LOOP:
   #     Go to the player snake addresses and change the head direction 
 
   ## Update head direction
+  movd %ret1 %arg1 #player 1
+  movd %ret2 %arg2 #player 2
+  call UPDATE_SNAKE_HEADS
 
 
 
 
   jmp MAIN_GAME_LOOP
 # end MAIN_GAME_LOOP
+
 
 
 # Controller Read
@@ -367,9 +372,29 @@ CONTROLLER_READ:
   movd %arg1 CONTROLLER_1_READ_ADDR
   movd %arg2 CONTROLLER_2_READ_ADDR
 
-  stow %a1l %a1l # Writing anything to either controller region sends a reset to the controller controller hardware (Should, anyway. Is currently broken in hardware)
+  stow %a1l %a1l # Writing anything to either controller region sends a reset 
+                 # to the controller hardware (Should, anyway. Is 
+                 # currently broken in hardware)
   loadd %ret1 %arg1
   loadd %ret2 %arg2
+  ret
+
+
+# Update snake heads
+# Take controller outputs, and set the direction of the snake heads
+# appropriately
+# Arguments:
+# None
+# Return:
+# %ret1: Controller 1 value
+# %ret2: Controller 2 value
+UPDATE_SNAKE_HEADS:
+  # Mask off the dpad bits
+  # Up   --> buttons[5]
+  # Down --> buttons[6]
+  # Left --> buttons[7]
+  # Right--> buttons[8]
+ 
   ret
 
 

@@ -85,9 +85,13 @@ SNAKE_2_BASE_ADDR=0x3F4000 # Player 2 snake starts here
 SNAKE_LENGTH=0x2000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
 
+GAME_BOARD_NUM_ROWS=0x40 # 64 rows
+GAME_BOARD_NUM_COLUMNS=0x50 # 80 columns
+GAME_BOARD_DEAD_SPACE=0x30 # The game board is an array 128 wide, but only 80 of that is visible
+
 GAME_BOARD_SIDE_BORDERS=0x2 # Width of walls on the left and right side
 GAME_BOARD_BOTTOM_BORDER=0x2 # Width of walls on the bottom of the game board
-GAME_BOARD_TOP_BORDER=0x5 # Width of walls on the top of the game board
+GAME_BOARD_TOP_BORDER=0x3 # Width of walls on the top of the game board
 
 GAME_BOARD_EMPTY=0x0
 GAME_BOARD_FOOD=0x1
@@ -99,7 +103,7 @@ EMPTY_COLOUR=0x00         # Black
 FOOD_COLOUR=0xFF          # White
 BLUE_SNAKE_COLOUR=0x3     # Blue
 ORANGE_SNAKE_COLOUR=0xF0  # Orange
-WALL_COLOUR=0xB6          # Grey
+WALL_COLOUR=0x6E          # Teal
 
 # All tiles are the same ASCII value, but are individually defined in case we
 # want to do something cleverer later
@@ -256,8 +260,41 @@ GAME_BOARD_ADD_WALLS:
     subw %r1l %r1l $0x1
     cmpw %r1l $0x0
     jmpb GAME_BOARD_ADD_WALLS_TOP_LOOP # $0x0 <? %r1l
-    
+
   # Put walls on the sides
+  # After finishing the top walls loop,
+  # %arg1 is point to the first point in the next row
+  # Number of side rows is the total number of rows minus the top and bottom border
+  movw %r1l GAME_BOARD_NUM_ROWS
+  subw %r1l %r1l GAME_BOARD_TOP_BORDER
+  subw %r1l %r1l GAME_BOARD_BOTTOM_BORDER
+  movw %a3l GAME_BOARD_WALL
+  # Empty space in the middle of the board is its width minus two side borders
+  movw %a3h GAME_BOARD_NUM_COLUMNS
+  subw %a3h %a3h GAME_BOARD_SIDE_BORDERS
+  subw %a3h %a3h GAME_BOARD_SIDE_BORDERS
+  GAME_BOARD_ADD_WALLS_SIDE_LOOP:
+    # Left border
+    # Hard-coded width of two. Could be fixed with another loop.
+    stow %a1l %a3l
+    addd %arg1 %arg1 $0x1
+    stow %a1l %a3l
+    addd %arg1 %arg1 $0x1
+    # Move across the middle
+    addw %a1l %a1l %a3h
+    addcw %a1h %a1h %zero
+    # Right border. Also hard-coded width, same fix required
+    stow %a1l %a3l
+    addd %arg1 %arg1 $0x1
+    stow %a1l %a3l
+    addd %arg1 %arg1 $0x1
+    # Move to the next line of the game board
+    addd %arg1 %arg1 GAME_BOARD_DEAD_SPACE
+    # Decrement the row counter and loop
+    subw %r1l %r1l $0x1
+    jmpbe GAME_BOARD_ADD_WALLS_SIDE_LOOP # $0x1 <=? %r1l
+    
+    
   
   # Put walls at the bottom
   

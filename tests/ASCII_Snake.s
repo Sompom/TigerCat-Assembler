@@ -180,15 +180,12 @@ INIT:
 
   # Write zeros to the entire snake 1 to mark every segment as inactive
   movd %arg1 SNAKE_1_BASE_ADDR
-  movd %arg2 SNAKE_LENGTH
-  movw %a3l $0x0
-  call MEMCPY_WORD
+  call NULLIFY_SNAKE
+
   # Write zeros to the entire snake 2 to mark every segment as inactive
   movd %arg1 SNAKE_2_BASE_ADDR
-  movd %arg2 SNAKE_LENGTH
-  movw %a3l $0x0
-  call MEMCPY_WORD
-  
+  call NULLIFY_SNAKE
+
   # Create brand-new baby snakes
   # Put the walls onto the in-memory game board
   call GAME_BOARD_ADD_WALLS
@@ -270,6 +267,18 @@ SNAKE_SEGMENT_PACK:
   ret
 # End SNAKE_SEGMENT_PACK
 
+
+# Nullify Snake
+# Write zero to an entire snake, therefore making all of its segments inactive
+# Arguments:
+# %arg1: The base address of the snake to nullify
+# Return:
+# void
+NULLIFY_SNAKE:
+  movd %arg2 SNAKE_LENGTH
+  movw %a3l $0x0
+  call MEMCPY_WORD
+  ret
 
 # Generate Food
 # Replace the current in-memory food with a new one

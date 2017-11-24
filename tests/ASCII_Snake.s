@@ -222,6 +222,8 @@ MEMCPY_WORD:
 
 # Generate Food
 # Replace the current in-memory food with a new one
+# This method will slightly skew the food towards the right side, and significantly 
+# skew it towards the bottom. Too bad, so sad.
 # Uses the same struct as a snake, ignoring everything except the row and column
 # Single-word:
 # {active,  L R U D,  column, row}
@@ -231,9 +233,39 @@ MEMCPY_WORD:
 # Return:
 # void
 GENERATE_FOOD:
-  movd %arg1 FOOD_ADDRESS
-  movw %a2l %rand # Randomly generate a row and column
-  stow %a1l %a2l
+  movw %a1l %rand # Randomly generate a row and column
+  call SNAKE_SEGMENT_GET_COORDINATES
+  # TODO: Actual checking for food row in-bounds-ness
+  # For now, bound the food by truncating it to 5 bits, then adding enough
+  # to make sure it isn't in the top wall
+  andw %r1l %r1l $0x1F
+  addw %r1l %r1l GAME_BOARD_TOP_BORDER
+
+  # Ensure we have not rolled off the left border
+  cmpw %r1h GAME_BOARD_SIDE_BORDERS
+  jmpbe GENERATE_FOOD_LEFT_COLUMN_OKAY # SIDE_BORDER <? column
+    # If we are off the left side, move back on
+    addw %r1h %r1h GAME_BOARD_SIDE_BORDERS
+    jmp GENERATE_FOOD_COLUMN_FINISHED
+    GENERATE_FOOD_LEFT_COLUMN_OKAY:
+    # Check if the column is now off the right border
+    movw %a1l GAME_BOARD_NUM_COLUMNS # Compare against the total number of columns...
+    subw %a1l %a1l GAME_BOARD_SIDE_BORDERS # ...minus the number of walls on the right
+    cmpw %a1l %r1h # Check if this food's column is in-bounds on the right
+    jmpb GENERATE_FOOD_COLUMN_FINISHED # r1h <? a1l
+    # Otherwise we were out-of-bounds on the right, push back in-bounds
+    # Since this is a 6-bit number, the max values is 63
+    # 'In Bounds' is the difference between the actual board width (59) and the
+    # maximum value, minus two wall sections
+    # I.e., we need to subtract (2 + (63 - 59)) = 6 to ensure we are in-bounds
+    subw %r1h %r1h $0x6
+  GENERATE_FOOD_COLUMN_FINISHED:
+  # Pack the row and column together
+  slw %r1h %r1h $0x6
+  orw %a1l %r1l %r1h
+  # Write to memory
+  movd %arg2 FOOD_ADDRESS
+  stow %a2l %a1l
   ret
 
 

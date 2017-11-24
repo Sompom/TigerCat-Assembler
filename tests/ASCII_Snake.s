@@ -297,7 +297,25 @@ GAME_BOARD_ADD_WALLS:
 
 
   # Put walls at the bottom
-  
+  # Use this counter to keep track of the number of top borders we need to draw
+  movw %r1l GAME_BOARD_BOTTOM_BORDER
+  GAME_BOARD_ADD_WALLS_BOTTOM_LOOP:
+    # Since the walls at the bottom are contiguous, we can just write a large region...
+    movd %arg2 GAME_BOARD_NUM_COLUMNS
+    movw %a3l GAME_BOARD_WALL
+    # Save registers for function call
+    pushd %arg1
+    pushw %r1l
+    call MEMCPY_WORD
+    popw %r1l
+    popd %arg1
+    # Increment the base address to the next row
+    # Each row is 128 words long = 0x80
+    addd %arg1 %arg1 $0x80
+    subw %r1l %r1l $0x1
+    cmpw %r1l $0x0
+    jmpb GAME_BOARD_ADD_WALLS_BOTTOM_LOOP # $0x0 <? %r1l
+
   ret
 #End GAME_BOARD_ADD_WALLS
 

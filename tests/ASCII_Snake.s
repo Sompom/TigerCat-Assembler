@@ -103,7 +103,7 @@ EMPTY_COLOUR=0x00         # Black
 FOOD_COLOUR=0xFF          # White
 BLUE_SNAKE_COLOUR=0x3     # Blue
 ORANGE_SNAKE_COLOUR=0xF0  # Orange
-WALL_COLOUR=0x6E          # Teal
+WALL_COLOUR=0x6F          # Teal
 
 # All tiles are the same ASCII value, but are individually defined in case we
 # want to do something cleverer later

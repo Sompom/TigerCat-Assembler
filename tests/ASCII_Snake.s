@@ -32,7 +32,10 @@ jmp INIT #TODO: MAKE INIT
 # {active,  L R U D,  column, row}
 #  [15]  ,  [14:13],  [12:6], [5:0]
 #
-#Take this data and read it into the game board before printing the board
+# The row and column are defined from the top left corner of the SCREEN, meaning
+# (for example) coordinate 0,0 (top left) and 79,59 (bottom right) are occupied by walls
+#
+# Take the snake data and read it into the game board before printing the board
 
 ### Game board
 

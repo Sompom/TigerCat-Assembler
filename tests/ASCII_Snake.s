@@ -192,6 +192,9 @@ INIT:
   # Create brand-new baby snakes
   # Put the walls onto the in-memory game board
   call GAME_BOARD_ADD_WALLS
+
+  call GENERATE_FOOD
+  call GAME_BOARD_ADD_FOOD
   # Put the snakes onto the in-memory game board
   # Randomly generate a food location and put it on the board
   call COPY_GAME_BOARD_TO_VGA

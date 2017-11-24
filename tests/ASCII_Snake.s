@@ -187,13 +187,17 @@ INIT:
   call NULLIFY_SNAKE
 
   # Create brand-new baby snakes
+  call SPAWN_SNAKE_1
+  call SPAWN_SNAKE_2
+
   # Put the walls onto the in-memory game board
   call GAME_BOARD_ADD_WALLS
 
+  # Randomly generate a food location and put it on the board
   call GENERATE_FOOD
   call GAME_BOARD_ADD_FOOD
   # Put the snakes onto the in-memory game board
-  # Randomly generate a food location and put it on the board
+  call GAME_BOARD_ADD_SNAKES
   call COPY_GAME_BOARD_TO_VGA
   jmp MAIN_GAME_LOOP
 #End INIT

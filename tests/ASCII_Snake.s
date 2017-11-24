@@ -284,6 +284,29 @@ GENERATE_FOOD:
   movd %arg2 FOOD_ADDRESS
   stow %a2l %a1l
   ret
+# End GENERATE_FOOD
+
+
+# Convert Coordinates to Game Board Address
+# Convert a row and column into an address in the game board array
+# Arguments:
+# %a1l: row
+# %a1h: column
+# Return:
+# %ret1: The address in the game board
+CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS:
+  movd %ret1 GAME_BOARD_BASE_ADDR
+  # Each row of the game board is 128 addresses long
+  # Therefore, to get to the proper coordinate, multiply the row by 128
+  # This is equivalent to left shifting by 7
+  slw %a1l %a1l $0x7
+  addw %r1l %r1l %a1l
+  addcw %r1h %r1h %zero
+  # Then, simply add the column
+  addw %r1l %r1l %a1h
+  addcw %r1h %r1h %zero
+  ret
+# End CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
 
 
 # Empty Game Board

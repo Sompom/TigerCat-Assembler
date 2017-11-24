@@ -292,10 +292,10 @@ GAME_BOARD_ADD_WALLS:
     addd %arg1 %arg1 GAME_BOARD_DEAD_SPACE
     # Decrement the row counter and loop
     subw %r1l %r1l $0x1
-    jmpbe GAME_BOARD_ADD_WALLS_SIDE_LOOP # $0x1 <=? %r1l
-    
-    
-  
+    cmpw %r1l $0x0
+    jmpb GAME_BOARD_ADD_WALLS_SIDE_LOOP # $0x0 <? %r1l
+
+
   # Put walls at the bottom
   
   ret

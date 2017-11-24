@@ -78,6 +78,8 @@ GAME_BOARD_BASE_ADDR=0x3F0000 # Game board starts here
 GAME_BOARD_LENGTH=0x1E00
 # Game Board is a 128x60 array of words, so goes until 0x3F1E00
 # Note that we could pack the 4-bit ints 4 per word, but that would be a pain
+# Store the coordinates of the food, using the same struct as a snake, here
+FOOD_ADDRESS= 0x3F1E000
 SNAKE_1_BASE_ADDR=0x3F2000 # Player 1 snake starts here
 # Snakes are, at the very largest, < 4096, so the end of snake 1 is 0x3F3FFF
 SNAKE_2_BASE_ADDR=0x3F4000 # Player 2 snake starts here
@@ -213,6 +215,24 @@ MEMCPY_WORD:
     ret
   #End MEMCPY_WORD_LOOP
 #End MEMCPY_WORD
+
+
+# Generate Food
+# Replace the current in-memory food with a new one
+# Uses the same struct as a snake, ignoring everything except the row and column
+# Double-word:
+# {unused, active,  L R U D,  column, row}
+# [31:17], [16]  ,  [15:14],  [13:6], [5:0]
+# Arguments:
+# None
+# Return:
+# void
+GENERATE_FOOD:
+  movd %arg1 FOOD_ADDRESS
+  movd %a2h $0x1 # Mark this new food as "active", even though it should not matter
+  movd %a2l %rand # Randomly generate a row and column
+  stowd %arg1 %arg2
+  ret
 
 
 # Empty Game Board

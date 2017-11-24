@@ -246,17 +246,17 @@ GAME_BOARD_ADD_WALLS:
   
   GAME_BOARD_ADD_WALLS_TOP_LOOP:
     # Since the walls at the top are contiguous, we can just write a large region...
-    # Each row is 128 words long = 0x80
-    movd %arg2 $0x80
+    movd %arg2 GAME_BOARD_NUM_COLUMNS
     movw %a3l GAME_BOARD_WALL
-    pushd %arg2
+    # Save registers for function call
     pushd %arg1
-    pushw %r1l # Save a register!
+    pushw %r1l
     call MEMCPY_WORD
     popw %r1l
     popd %arg1
-    popd %arg2
-    addd %arg1 %arg1 %arg2 # Increment the base address to the next row
+    # Increment the base address to the next row
+    # Each row is 128 words long = 0x80
+    addd %arg1 %arg1 $0x80
     subw %r1l %r1l $0x1
     cmpw %r1l $0x0
     jmpb GAME_BOARD_ADD_WALLS_TOP_LOOP # $0x0 <? %r1l

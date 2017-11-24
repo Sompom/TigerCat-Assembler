@@ -75,8 +75,8 @@ CONTROLLER_1_READ_ADDR=0x7FDBDB # Read from controller 1 here
 CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
 
 GAME_BOARD_BASE_ADDR=0x3F0000 # Game board starts here
-GAME_BOARD_LENGTH=0x2000
-# Game Board is a 128x64 array of words, so goes until 0x3F1FFF
+GAME_BOARD_LENGTH=0x1E00
+# Game Board is a 128x60 array of words, so goes until 0x3F1E00
 # Note that we could pack the 4-bit ints 4 per word, but that would be a pain
 SNAKE_1_BASE_ADDR=0x3F2000 # Player 1 snake starts here
 # Snakes are, at the very largest, < 4096, so the end of snake 1 is 0x3F3FFF
@@ -85,7 +85,7 @@ SNAKE_2_BASE_ADDR=0x3F4000 # Player 2 snake starts here
 SNAKE_LENGTH=0x2000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
 
-GAME_BOARD_NUM_ROWS=0x40 # 64 rows
+GAME_BOARD_NUM_ROWS=0x3C # 60 rows
 GAME_BOARD_NUM_COLUMNS=0x50 # 80 columns
 GAME_BOARD_DEAD_SPACE=0x30 # The game board is an array 128 wide, but only 80 of that is visible
 

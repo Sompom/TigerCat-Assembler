@@ -28,9 +28,9 @@ jmp INIT #TODO: MAKE INIT
 
 #Snake data is represented as an array of this data starting at a player-specific address
 #Snake storage data:
-# Double-word:
-# {unused, active,  L R U D,  column, row}
-# [31:17], [16]  ,  [15:14],  [13:6], [5:0]
+# Single-word:
+# {active,  L R U D,  column, row}
+#  [15]  ,  [14:13],  [12:6], [5:0]
 #
 #Take this data and read it into the game board before printing the board
 
@@ -82,9 +82,9 @@ GAME_BOARD_LENGTH=0x1E00
 FOOD_ADDRESS= 0x3F1E000
 SNAKE_1_BASE_ADDR=0x3F2000 # Player 1 snake starts here
 # Snakes are, at the very largest, < 4096, so the end of snake 1 is 0x3F3FFF
-SNAKE_2_BASE_ADDR=0x3F4000 # Player 2 snake starts here
+SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here
 # Snakes are, at the very largest, < 4096, so the end of snake 2 is 0x3F5FFF
-SNAKE_LENGTH=0x2000 # Both snakes are the same length
+SNAKE_LENGTH=0x1000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
 
 GAME_BOARD_NUM_ROWS=0x3C # 60 rows
@@ -220,18 +220,17 @@ MEMCPY_WORD:
 # Generate Food
 # Replace the current in-memory food with a new one
 # Uses the same struct as a snake, ignoring everything except the row and column
-# Double-word:
-# {unused, active,  L R U D,  column, row}
-# [31:17], [16]  ,  [15:14],  [13:6], [5:0]
+# Single-word:
+# {active,  L R U D,  column, row}
+#  [15]  ,  [14:13],  [12:6], [5:0]
 # Arguments:
 # None
 # Return:
 # void
 GENERATE_FOOD:
   movd %arg1 FOOD_ADDRESS
-  movd %a2h $0x1 # Mark this new food as "active", even though it should not matter
-  movd %a2l %rand # Randomly generate a row and column
-  stowd %arg1 %arg2
+  movw %a2l %rand # Randomly generate a row and column
+  stow %a1l %a2l
   ret
 
 

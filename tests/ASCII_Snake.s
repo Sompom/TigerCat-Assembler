@@ -246,6 +246,29 @@ SNAKE_SEGMENT_UNPACK:
   andw %r2h %a1l %r2h # Load the active bit
   surw %r2l %r2l $0xF # Move the active bit to the lowest bit
   ret
+# End SNAKE_SEGMENT_UNPACK
+
+
+# Snake Segment Pack
+# Pack the row, column, direction, and active bit into a snake segment
+# Arguments:
+# %a1l: row
+# %a1h: column
+# %a2l: direction
+# %a2h: active bit
+# Return:
+# %r1l: The packed snake segment
+SNAKE_SEGMENT_PACK:
+  slw %a1h %a1h $0x6 # Move the column into position
+  slw %a2l %a2l $0xB # Move the direction into position
+  slw %a2h %a2h $0xF # Move the active bit into position
+
+  movw %r1l %a1l # Add the row
+  orw %r1l %r1l %a1h # Add the column
+  orw %r1l %r1l %a2l # Add the direction
+  orw %r1l %r1l %a2h # Add the active bit
+  ret
+# End SNAKE_SEGMENT_PACK
 
 
 # Generate Food
@@ -289,11 +312,11 @@ GENERATE_FOOD:
     subw %r1h %r1h $0x6
   GENERATE_FOOD_COLUMN_FINISHED:
   # Pack the row and column together
-  slw %r1h %r1h $0x6
-  orw %a1l %r1l %r1h
+  movd %arg1 %ret1
+  call SNAKE_SEGMENT_PACK
   # Write to memory
   movd %arg2 FOOD_ADDRESS
-  stow %a2l %a1l
+  stow %a2l %r1l
   ret
 # End GENERATE_FOOD
 

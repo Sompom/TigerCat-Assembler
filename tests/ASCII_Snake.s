@@ -223,20 +223,28 @@ MEMCPY_WORD:
 #End MEMCPY_WORD
 
 
-# Snake Segment Get Coordinates
-# Unpacks the row and column from the passed snake segment
+# Snake Segment Unpack
+# Unpacks the row, column, direction, and existence from the passed snake segment
 # Arguments:
 # %a1l: Snake segment to unpack
 # Return:
 # %r1l: row
 # %r1h: column
-SNAKE_SEGMENT_GET_COORDINATES:
+# %r2l: direction
+# %r2h: active bit
+SNAKE_SEGMENT_UNPACK:
   movw %r1l $0x3F # Mask for the row
   movw %r1h $0x1FC0 # Mask for the column
+  movw %r2l $0x7800 # Mask for the direction
+  movw %r2h $0x8000 # Mask for the active bit
   andw %r1l %a1l %r1l # Load the row
   # No need to shift the row
   andw %r1h %a1l %r1h # Load the colummn
   surw %r1h %r1h $0x6 # Move the column to the lower bits
+  andw %r2l %a1l %r2l # Load the direction
+  surw %r2l %r2l $0xB # Move the direction to the lower bits
+  andw %r2h %a1l %r2h # Load the active bit
+  surw %r2l %r2l $0xF # Move the active bit to the lowest bit
   ret
 
 
@@ -254,7 +262,7 @@ SNAKE_SEGMENT_GET_COORDINATES:
 # void
 GENERATE_FOOD:
   movw %a1l %rand # Randomly generate a row and column
-  call SNAKE_SEGMENT_GET_COORDINATES
+  call SNAKE_SEGMENT_UNPACK
   # TODO: Actual checking for food row in-bounds-ness
   # For now, bound the food by truncating it to 5 bits, then adding enough
   # to make sure it isn't in the top wall
@@ -431,7 +439,7 @@ GAME_BOARD_ADD_WALLS:
 GAME_BOARD_ADD_FOOD:
   movd %arg1 FOOD_ADDRESS
   loadw %a1l %a1l # Don't need the address any more, just load into the same register
-  call SNAKE_SEGMENT_GET_COORDINATES
+  call SNAKE_SEGMENT_UNPACK
   movd %arg1 %ret1
   call CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
   stow %r1l GAME_BOARD_FOOD

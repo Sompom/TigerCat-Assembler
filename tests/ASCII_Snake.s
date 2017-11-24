@@ -415,6 +415,26 @@ GAME_BOARD_ADD_WALLS:
 #End GAME_BOARD_ADD_WALLS
 
 
+# Game Board Add Food
+# Put the food on the in-memory game board
+# Uses the same struct as a snake, ignoring everything except the row and column
+# Single-word:
+# {active,  L R U D,  column, row}
+#  [15]  ,  [14:13],  [12:6], [5:0]
+# Arguments:
+# None
+# Return:
+# void
+GAME_BOARD_ADD_FOOD:
+  movd %arg1 FOOD_ADDRESS
+  loadw %a1l %a1l # Don't need the address any more, just load into the same register
+  call SNAKE_SEGMENT_GET_COORDINATES
+  movd %arg1 %ret1
+  call CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
+  stow %r1l GAME_BOARD_FOOD
+  ret
+
+
 # Copy Game Board to VGA
 # Convert the in-memory game board to ASCII and push it to the VGA
 # Arguments:

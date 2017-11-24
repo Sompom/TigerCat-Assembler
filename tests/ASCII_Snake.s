@@ -220,6 +220,23 @@ MEMCPY_WORD:
 #End MEMCPY_WORD
 
 
+# Snake Segment Get Coordinates
+# Unpacks the row and column from the passed snake segment
+# Arguments:
+# %a1l: Snake segment to unpack
+# Return:
+# %r1l: row
+# %r1h: column
+SNAKE_SEGMENT_GET_COORDINATES:
+  movw %r1l $0x3F # Mask for the row
+  movw %r1h $0x1FC0 # Mask for the column
+  andw %r1l %a1l %r1l # Load the row
+  # No need to shift the row
+  andw %r1h %a1l %r1h # Load the colummn
+  surw %r1h %r1h $0x6 # Move the column to the lower bits
+  ret
+
+
 # Generate Food
 # Replace the current in-memory food with a new one
 # This method will slightly skew the food towards the right side, and significantly 

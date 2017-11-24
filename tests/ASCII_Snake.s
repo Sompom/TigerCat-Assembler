@@ -260,6 +260,7 @@ GAME_BOARD_ADD_WALLS:
     subw %r1l %r1l $0x1
     cmpw %r1l $0x0
     jmpb GAME_BOARD_ADD_WALLS_TOP_LOOP # $0x0 <? %r1l
+  # End GAME_BOARD_ADD_WALLS_TOP_LOOP
 
   # Put walls on the sides
   # After finishing the top walls loop,
@@ -294,7 +295,7 @@ GAME_BOARD_ADD_WALLS:
     subw %r1l %r1l $0x1
     cmpw %r1l $0x0
     jmpb GAME_BOARD_ADD_WALLS_SIDE_LOOP # $0x0 <? %r1l
-
+  # End GAME_BOARD_ADD_WALLS_SIDE_LOOP
 
   # Put walls at the bottom
   # Use this counter to keep track of the number of top borders we need to draw
@@ -315,7 +316,7 @@ GAME_BOARD_ADD_WALLS:
     subw %r1l %r1l $0x1
     cmpw %r1l $0x0
     jmpb GAME_BOARD_ADD_WALLS_BOTTOM_LOOP # $0x0 <? %r1l
-
+  # End GAME_BOARD_ADD_WALLS_BOTTOM_LOOP
   ret
 #End GAME_BOARD_ADD_WALLS
 

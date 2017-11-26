@@ -29,7 +29,7 @@ jmp INIT #TODO: MAKE INIT
 #Snake data is represented as an array of this data starting at a player-specific address
 #Snake storage data:
 # Single-word:
-# {active,  L R U D,  column, row}
+# {active,  L D R U,  column, row}
 #  [15]  ,  [14:13],  [12:6], [5:0]
 #
 # The row and column are defined from the top left corner of the SCREEN, meaning
@@ -89,6 +89,11 @@ SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here
 # Snakes are, at the very largest, < 4096, so the end of snake 2 is 0x3F5FFF
 SNAKE_LENGTH=0x1000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
+
+SNAKE_DIRECTION_LEFT=0x3
+SNAKE_DIRECTION_DOWN=0x2
+SNAKE_DIRECTION_RIGHT=0x1
+SNAKE_DIRECTION_UP=0x0
 
 GAME_BOARD_NUM_ROWS=0x3C # 60 rows
 GAME_BOARD_NUM_COLUMNS=0x50 # 80 columns
@@ -290,7 +295,7 @@ NULLIFY_SNAKE:
 # skew it towards the bottom. Too bad, so sad.
 # Uses the same struct as a snake, ignoring everything except the row and column
 # Single-word:
-# {active,  L R U D,  column, row}
+# {active,  L D R U,  column, row}
 #  [15]  ,  [14:13],  [12:6], [5:0]
 # Arguments:
 # None

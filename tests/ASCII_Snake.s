@@ -787,6 +787,46 @@ MAIN_GAME_LOOP:
 # end MAIN_GAME_LOOP
 
 
+# Convert Controller To Direction
+# Extract the game direction from a controller
+# Returns -1 (0xFFFF) if none of the directions were pushed
+# Arguments:
+# %arg1 - Controller Bitfield
+# Return:
+# %r1l - Controller's direction input
+CONVERT_CONTROLLER_TO_DIRECTION:
+  # %a1l has the lower bits from the controller
+  # Using the bitmasks (see header comment), we can extract the direction
+  andw %a1h %a1l $0x10 # Mask Up
+    cmpw %a1h $0x10
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_UP
+  andw %a1h %a1l $0x20 # Mask Down
+    cmpw %a1h $0x20
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_DOWN
+  andw %a1h %a1l $0x40 # Mask Left
+    cmpw %a1h $0x40
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_LEFT
+  andw %a1h %a1l $0x80 # Mask Right
+    cmpw %a1h $0x80
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_RIGHT
+  # If none of those, return a fail code
+  movw %r1l $0xFFFF
+  ret
+
+  CONVERT_CONTROLLER_TO_DIRECTION_UP:
+    movw %r1l SNAKE_DIRECTION_UP
+    ret
+  CONVERT_CONTROLLER_TO_DIRECTION_DOWN:
+    movw %r1l SNAKE_DIRECTION_DOWN
+    ret
+  CONVERT_CONTROLLER_TO_DIRECTION_LEFT:
+    movw %r1l SNAKE_DIRECTION_LEFT
+    ret
+  CONVERT_CONTROLLER_TO_DIRECTION_RIGHT:
+    movw %r1l SNAKE_DIRECTION_RIGHT
+    ret
+# End CONVERT_CONTROLLER_TO_DIRECTION
+
 
 # Controller Read
 # Read from both controllers, put their outputs into %ret1 and %ret2

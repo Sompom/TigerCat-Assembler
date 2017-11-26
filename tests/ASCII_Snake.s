@@ -266,7 +266,7 @@ SNAKE_SEGMENT_UNPACK:
 # %r1l: The packed snake segment
 SNAKE_SEGMENT_PACK:
   slw %a1h %a1h $0x6 # Move the column into position
-  slw %a2l %a2l $0xB # Move the direction into position
+  slw %a2l %a2l $0xD # Move the direction into position
   slw %a2h %a2h $0xF # Move the active bit into position
 
   movw %r1l %a1l # Add the row

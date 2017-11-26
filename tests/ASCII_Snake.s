@@ -95,6 +95,9 @@ SNAKE_DIRECTION_DOWN=0x2
 SNAKE_DIRECTION_RIGHT=0x1
 SNAKE_DIRECTION_UP=0x0
 
+SNAKE_ACTIVE=0x1
+SNAKE_INACTIVE=0x0
+
 GAME_BOARD_NUM_ROWS=0x3C # 60 rows
 GAME_BOARD_NUM_COLUMNS=0x50 # 80 columns
 GAME_BOARD_DEAD_SPACE=0x30 # The game board is an array 128 wide, but only 80 of that is visible
@@ -315,7 +318,7 @@ SPAWN_SNAKE_1:
   movw %a2l SNAKE_DIRECTION_DOWN
 
   # Prepare the active bit - Active
-  movw %a2h $0x1
+  movw %a2h SNAKE_ACTIVE
 
   call SNAKE_SEGMENT_PACK
 
@@ -337,7 +340,7 @@ SPAWN_SNAKE_1:
   movw %a2l SNAKE_DIRECTION_DOWN
 
   # Prepare the active bit - Active
-  movw %a2h $0x1
+  movw %a2h SNAKE_ACTIVE
 
   call SNAKE_SEGMENT_PACK
 
@@ -571,7 +574,7 @@ GAME_BOARD_ADD_SNAKES_HELPER:
   loadw %a1l %a1l # Load the next segment
   call SNAKE_SEGMENT_UNPACK
   # Check whether this section was inactive
-  cmpw %r2h $0x0
+  cmpw %r2h SNAKE_INACTIVE
   jmpe GAME_BOARD_ADD_SNAKES_FINISHED
   # Prepare for call to coordinate converter
   movd %arg1 %ret1

@@ -185,9 +185,6 @@ GAME_TICK_VALUE=0x100 #time in between ticks
 # Return:
 # void
 INIT:
-  # Write zeros to the entire game board to mark everything as empty
-  call EMPTY_GAME_BOARD
-
   # Write zeros to the entire snake 1 to mark every segment as inactive
   movd %arg1 SNAKE_1_BASE_ADDR
   call NULLIFY_SNAKE
@@ -200,15 +197,11 @@ INIT:
   call SPAWN_SNAKE_1
   call SPAWN_SNAKE_2
 
-  # Put the walls onto the in-memory game board
-  call GAME_BOARD_ADD_WALLS
-
   # Randomly generate a food location and put it on the board
   call GENERATE_FOOD
-  call GAME_BOARD_ADD_FOOD
 
-  # Put the snakes onto the in-memory game board
-  call GAME_BOARD_ADD_SNAKES
+  call UPDATE_GAME_BOARD
+  
   jmp MAIN_GAME_LOOP
 #End INIT
 
@@ -487,6 +480,25 @@ CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS:
   addcw %r1h %r1h %zero
   ret
 # End CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
+
+
+# Update Game Board
+# Read all the other in-memory structs to make the game board
+# reflect the current state
+# Arguments:
+# None
+# Return:
+# void
+UPDATE_GAME_BOARD:
+  # Write zeros to the entire game board to mark everything as empty
+  call EMPTY_GAME_BOARD
+  # Put the walls onto the in-memory game board
+  call GAME_BOARD_ADD_WALLS
+  call GAME_BOARD_ADD_FOOD
+  # Put the snakes onto the in-memory game board
+  call GAME_BOARD_ADD_SNAKES
+  ret
+# End UPDATE_GAME_BOARD
 
 
 # Empty Game Board

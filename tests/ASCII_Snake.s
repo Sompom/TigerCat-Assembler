@@ -241,14 +241,14 @@ MEMCPY_WORD:
 SNAKE_SEGMENT_UNPACK:
   movw %r1l $0x3F # Mask for the row
   movw %r1h $0x1FC0 # Mask for the column
-  movw %r2l $0x7800 # Mask for the direction
+  movw %r2l $0x6000 # Mask for the direction
   movw %r2h $0x8000 # Mask for the active bit
   andw %r1l %a1l %r1l # Load the row
   # No need to shift the row
   andw %r1h %a1l %r1h # Load the colummn
   surw %r1h %r1h $0x6 # Move the column to the lower bits
   andw %r2l %a1l %r2l # Load the direction
-  surw %r2l %r2l $0xB # Move the direction to the lower bits
+  surw %r2l %r2l $0xD # Move the direction to the lower bits
   andw %r2h %a1l %r2h # Load the active bit
   surw %r2l %r2l $0xF # Move the active bit to the lowest bit
   ret

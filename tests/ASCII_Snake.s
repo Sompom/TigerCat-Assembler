@@ -360,8 +360,58 @@ SPAWN_SNAKE_1:
 # Return:
 # void
 SPAWN_SNAKE_2:
-  # TODO: Implement
-  debug
+  # Prepare the coordinates of the second snake's head
+  # It should be placed in the bottom right of the board, before the walls,
+  # one square up
+
+  # Prepare the row, which should be the second square before the bottom wall
+  movw %a1l GAME_BOARD_NUM_ROWS
+  subw %a1l %a1l $0x1 # NUM_ROWS is 'one-indexed', while our board starts at 0
+  subw %a1l %a1l GAME_BOARD_BOTTOM_BORDER
+  subw %a1l %a1l $0x1
+
+  # Prepare the column, which should be the last square before the side wall
+  movw %a1h GAME_BOARD_NUM_COLUMNS
+  subw %a1h %a1h $0x1 # NUM_COLUMNS is 'one-indexed', while our board starts at 0
+  subw %a1h %a1h GAME_BOARD_SIDE_BORDERS
+
+  # Prepare the direction - Down
+  movw %a2l SNAKE_DIRECTION_UP
+
+  # Prepare the active bit - Active
+  movw %a2h SNAKE_ACTIVE
+
+  call SNAKE_SEGMENT_PACK
+
+  # Write the new segment to the snake
+  movd %arg3 SNAKE_2_BASE_ADDR
+  stow %a3l %r1l
+
+  # Now give the snake one tail segment
+
+  # Prepare the row, which should be the last square before the bottom wall
+  movw %a1l GAME_BOARD_NUM_ROWS
+  subw %a1l %a1l $0x1 # NUM_ROWS is 'one-indexed', while our board starts at 0
+  subw %a1l %a1l GAME_BOARD_BOTTOM_BORDER
+
+  # Prepare the column, which should be the last square before the side wall
+  movw %a1h GAME_BOARD_NUM_COLUMNS
+  subw %a1h %a1h $0x1 # NUM_COLUMNS is 'one-indexed', while our board starts at 0
+  subw %a1h %a1h GAME_BOARD_SIDE_BORDERS
+
+  # Prepare the direction - Up
+  movw %a2l SNAKE_DIRECTION_UP
+
+  # Prepare the active bit - Active
+  movw %a2h SNAKE_ACTIVE
+
+  call SNAKE_SEGMENT_PACK
+
+  # Write the new segment to the snake
+  movd %arg3 SNAKE_2_BASE_ADDR
+  addd %arg3 %arg3 $0x1
+  stow %a3l %r1l
+
   ret
 # End SPAWN_SNAKE_2
 

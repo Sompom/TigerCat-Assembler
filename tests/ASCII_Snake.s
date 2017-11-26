@@ -540,6 +540,54 @@ GAME_BOARD_ADD_WALLS:
 #End GAME_BOARD_ADD_WALLS
 
 
+# Game Board Add Snakes
+# Put the snakes on the in-memory game board
+# Arguments:
+# None
+# Return:
+# void
+GAME_BOARD_ADD_SNAKES:
+  # Copy snake 1 first
+  movd %arg1 SNAKE_1_BASE_ADDR
+  movw %a2l GAME_BOARD_PLAYER_1_SNAKE
+  call GAME_BOARD_ADD_SNAKES_HELPER
+  # Then copy snake 2
+  movd %arg1 SNAKE_2_BASE_ADDR
+  movw %a2l GAME_BOARD_PLAYER_2_SNAKE
+  call GAME_BOARD_ADD_SNAKES_HELPER
+  ret
+# End GAME_BOARD_ADD_SNAKES
+
+# Game Board Add Snakes Helper
+# Do the actual work of putting one snake on the board
+# Arguments:
+# %arg1 - Base address of the snake to add to the board
+# %a2l - Game board marker to use (GAME_BOARD_PLAYER_1_SNAKE or GAME_BOARD_PLAYER_2_SNAKE)
+# Return:
+# void
+GAME_BOARD_ADD_SNAKES_HELPER:
+  pushd %arg1 # Save the current address into the snake
+  pushw %a2l  # Save the game board marker 
+  loadw %a1l %a1l # Load the next segment
+  call SNAKE_SEGMENT_UNPACK
+  # Check whether this section was inactive
+  cmpw %r2h $0x0
+  jmpe GAME_BOARD_ADD_SNAKES_FINISHED
+  # Prepare for call to coordinate converter
+  movd %arg1 %ret1
+  call CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
+  popw %a2l # Restore the game board marker
+  stow %r1l %a2l
+  # Restore and increment the snake pointer
+  popd %arg1
+  addd %arg1 %arg1 $0x1
+  jmp GAME_BOARD_ADD_SNAKES_HELPER # Tail recursive call
+  GAME_BOARD_ADD_SNAKES_FINISHED:
+    addd %SP %SP $0x3 # Clean up stack from pushing arg1 and a2l earlier
+    ret
+# End GAME_BOARD_ADD_SNAKES_HELPER
+
+
 # Game Board Add Food
 # Put the food on the in-memory game board
 # Uses the same struct as a snake, ignoring everything except the row and column

@@ -255,7 +255,7 @@ SNAKE_SEGMENT_UNPACK:
   andw %r2l %a1l %r2l # Load the direction
   surw %r2l %r2l $0xD # Move the direction to the lower bits
   andw %r2h %a1l %r2h # Load the active bit
-  surw %r2l %r2l $0xF # Move the active bit to the lowest bit
+  surw %r2h %r2h $0xF # Move the active bit to the lowest bit
   ret
 # End SNAKE_SEGMENT_UNPACK
 

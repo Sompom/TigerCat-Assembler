@@ -770,6 +770,16 @@ MAIN_GAME_LOOP:
   movd %ret2 %arg2 #player 2
   call UPDATE_SNAKE_HEADS
 
+  # Move the snakes
+  # TODO: Put the new head direction into %a2l to move in that direction!
+  movd %arg1 SNAKE_1_BASE_ADDR
+  movw %a2l SNAKE_DIRECTION_DOWN
+  call SHUFFLE_SNAKE
+  movd %arg1 SNAKE_2_BASE_ADDR
+  movw %a2l SNAKE_DIRECTION_UP
+  call SHUFFLE_SNAKE
+  
+  call UPDATE_GAME_BOARD
 
   # Update the monitor
   call COPY_GAME_BOARD_TO_VGA
@@ -815,6 +825,73 @@ UPDATE_SNAKE_HEADS:
  
   ret
 
+
+# Shuffle Snakes
+# Move the passed snake forward one position
+# 'Forward', in this case, is calculated by moving each piece one step in the direction
+# it is facing, then setting its direction to be the direction of the piece in front of it
+# Arguments:
+# %arg1 - The base address of the snake to move
+# %a2l  - The direction of the previous segment
+# Return:
+# void
+SHUFFLE_SNAKE:
+  pushd %arg1 # Save the current address into the snake
+  pushw %a2l  # Save the leading segment's direction
+  loadw %a1l %a1l # Load the next segment
+  call SNAKE_SEGMENT_UNPACK
+  # Check whether this section was inactive
+  cmpw %r2h SNAKE_INACTIVE
+  jmpe SHUFFLE_SNAKE_FINISHED
+  # Decide which direction the snake was going
+  cmpw %r2l SNAKE_DIRECTION_LEFT
+    jmpe SHUFFLE_SNAKE_LEFT
+  cmpw %r2l SNAKE_DIRECTION_RIGHT
+    jmpe SHUFFLE_SNAKE_RIGHT
+  cmpw %r2l SNAKE_DIRECTION_UP
+    jmpe SHUFFLE_SNAKE_UP
+  cmpw %r2l SNAKE_DIRECTION_DOWN
+    jmpe SHUFFLE_SNAKE_DOWN
+
+  SHUFFLE_SNAKE_LEFT:
+    # Decrease the column coordinate by 1
+    subw %r1h %r1h $0x1
+    jmp SHUFFLE_SNAKE_WRITEBACK
+  SHUFFLE_SNAKE_RIGHT:
+    # Increase the column coordinate by 1
+    addw %r1h %r1h $0x1
+    jmp SHUFFLE_SNAKE_WRITEBACK
+  SHUFFLE_SNAKE_UP:
+    # Decrease the row coordinate by 1
+    subw %r1l %r1l $0x1
+    jmp SHUFFLE_SNAKE_WRITEBACK
+  SHUFFLE_SNAKE_DOWN:
+    # Increase the row coordinate by 1
+    addw %r1l %r1l $0x1
+    jmp SHUFFLE_SNAKE_WRITEBACK
+
+  SHUFFLE_SNAKE_WRITEBACK:
+    # Restore the last segment's direction
+    popw %a3l
+    # Save this segment's direction. We will need to pass it to the next call
+    pushw %r2l 
+    # Update this segment's direction
+    movw %r2l %a3l
+
+    # Pack the segment
+    movd %arg1 %ret1
+    movd %arg2 %ret2
+    call SNAKE_SEGMENT_PACK
+    popw %a2l  # Restore this segment's direction
+    popd %arg1 # Restore this segment's address
+    stow %a1l %r1l # Write this segment
+    addd %arg1 %arg1 $0x1 # Move to the next segment
+    jmp SHUFFLE_SNAKE # Tail recursive call
+
+  SHUFFLE_SNAKE_FINISHED:
+    addd %SP %SP $0x3 # Clean up stack from pushing arg1 and %a2l earlier
+    ret
+# End SHUFFLE_SNAKE
 
 
 # Error Print

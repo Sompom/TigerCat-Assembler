@@ -204,9 +204,9 @@ INIT:
   # Randomly generate a food location and put it on the board
   call GENERATE_FOOD
   call GAME_BOARD_ADD_FOOD
+
   # Put the snakes onto the in-memory game board
   call GAME_BOARD_ADD_SNAKES
-  call COPY_GAME_BOARD_TO_VGA
   jmp MAIN_GAME_LOOP
 #End INIT
 
@@ -757,7 +757,8 @@ MAIN_GAME_LOOP:
   call UPDATE_SNAKE_HEADS
 
 
-
+  # Update the monitor
+  call COPY_GAME_BOARD_TO_VGA
 
   jmp MAIN_GAME_LOOP
 # end MAIN_GAME_LOOP

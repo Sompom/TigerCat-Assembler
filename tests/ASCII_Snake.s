@@ -126,7 +126,7 @@ FOOD_ASCII_VALUE=0x80
 SNAKE_ASCII_VALUE=0x80
 WALL_ASCII_VALUE=0x80
 
-GAME_TICK_VALUE=0x100 #time in between ticks
+GAME_TICK_VALUE=0x3FFFF #time in between ticks
 # TODO: game board base address
 # End constants
 
@@ -750,9 +750,9 @@ MAIN_GAME_LOOP:
   ## game tick
   movd %arg1 GAME_TICK_VALUE
   GAME_TICK_DELAY:
-    subd %arg1 %arg1 $0x100
+    subd %arg1 %arg1 $0x1
     cmpd %arg1 $0x0
-    jmpg GAME_TICK_DELAY
+    jmpb GAME_TICK_DELAY # 0x0 <? %arg1
   # end GAME_TICK_DELAY
 
   ### Player control

@@ -82,7 +82,9 @@ GAME_BOARD_LENGTH=0x1E00
 # Game Board is a 128x60 array of words, so goes until 0x3F1E00
 # Note that we could pack the 4-bit ints 4 per word, but that would be a pain
 # Store the coordinates of the food, using the same struct as a snake, here
-FOOD_ADDRESS= 0x3F1E000
+FOOD_ADDRESS=0x3F1E000
+PLAYER_1_SCORE=0x3F1E001 # Player 1's score, single word integer (global variable)
+PLAYER_2_SCORE=0x3F1E002 # Player 2's score, single word integer (global variable)
 SNAKE_1_BASE_ADDR=0x3F2000 # Player 1 snake starts here
 # Snakes are, at the very largest, < 4096, so the end of snake 1 is 0x3F3FFF
 SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here

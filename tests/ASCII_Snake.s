@@ -288,6 +288,79 @@ NULLIFY_SNAKE:
   movw %a3l $0x0
   call MEMCPY_WORD
   ret
+# End NULLIFY_SNAKE
+
+
+# Spawn Snake 1
+# Puts a new snake in its spawn location
+# Arguments:
+# None
+# Return:
+# void
+SPAWN_SNAKE_1:
+  # Prepare the coordinates of the first snake's head
+  # It should be placed in the top left of the board, after the walls,
+  # one square down
+
+  # Prepare the row, which should be the second square past the top wall
+  movw %a1l $0x0
+  addw %a1l %a1l GAME_BOARD_TOP_BORDER
+  addw %a1l %a1l $0x1
+
+  # Prepare the column, which should be the first square past the side wall
+  movw %a1h $0x0
+  addw %a1h %a1h GAME_BOARD_SIDE_BORDERS
+
+  # Prepare the direction - Down
+  movw %a2l SNAKE_DIRECTION_DOWN
+
+  # Prepare the active bit - Active
+  movw %a2h $0x1
+
+  call SNAKE_SEGMENT_PACK
+
+  # Write the new segment to the snake
+  movd %arg3 SNAKE_1_BASE_ADDR
+  stow %a3l %r1l
+
+  # Now give the snake one tail segment
+
+  # Prepare the row, which should be the first square past the top wall
+  movw %a1l $0x0
+  addw %a1l %a1l GAME_BOARD_TOP_BORDER
+
+  # Prepare the column, which should be the first square past the side wall
+  movw %a1h $0x0
+  addw %a1h %a1h GAME_BOARD_SIDE_BORDERS
+
+  # Prepare the direction - Down
+  movw %a2l SNAKE_DIRECTION_DOWN
+
+  # Prepare the active bit - Active
+  movw %a2h $0x1
+
+  call SNAKE_SEGMENT_PACK
+
+  # Write the new segment to the snake
+  movd %arg3 SNAKE_1_BASE_ADDR
+  addd %arg3 %arg3 $0x1
+  stow %a3l %r1l
+
+  ret
+# End SPAWN_SNAKE_1
+
+
+# Spawn Snake 2
+# Puts a new snake in its spawn location
+# Arguments:
+# None
+# Return:
+# void
+SPAWN_SNAKE_2:
+  # TODO: Implement
+  debug
+  ret
+# End SPAWN_SNAKE_2
 
 # Generate Food
 # Replace the current in-memory food with a new one

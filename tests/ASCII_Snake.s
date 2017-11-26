@@ -775,6 +775,7 @@ MAIN_GAME_LOOP:
   popw %a2l # Restore controller 1's decoded output
 
   # We now have controller 1's output in %a2l and controller 2's output in %r1l
+  # Note that those 'directions' may be 0xFFFF if the controller didn't have any pressed buttons! This needs to be handled.
   # Note that the SHUFFLE_SNAKE function will take a single snake segment
   # and advance all segments following that one. If the head is handled
   # specially, be sure to give the second segment to SHUFFLE_SNAKE

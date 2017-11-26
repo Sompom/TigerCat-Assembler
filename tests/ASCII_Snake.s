@@ -764,15 +764,29 @@ MAIN_GAME_LOOP:
   #     Prevent the player from going backwards
   #     Go to the player snake addresses and change the head direction 
 
+  call CONTROLLER_READ
+  # Decode controller 1
+  movd %arg1 %ret1
+  pushd %ret2 # Save controller 2's data
+  call CONVERT_CONTROLLER_TO_DIRECTION
+  popd %arg1 # Restore controller 2's data
+  pushw %r1l # Save controller 1's decoded output
+  call CONVERT_CONTROLLER_TO_DIRECTION
+  popw %a2l # Restore controller 1's decoded output
+
+  # We now have controller 1's output in %a2l and controller 2's output in %r1l
+  # Note that the SHUFFLE_SNAKE function will take a single snake segment
+  # and advance all segments following that one. If the head is handled
+  # specially, be sure to give the second segment to SHUFFLE_SNAKE
+
   ## Update head direction
   movd %ret1 %arg1 #player 1
   movd %ret2 %arg2 #player 2
   call UPDATE_SNAKE_HEADS
 
   # Move the snakes
-  # TODO: Put the new head direction into %a2l to move in that direction!
+  # TODO: Put the new snake head direction as %a2l for these calls
   movd %arg1 SNAKE_1_BASE_ADDR
-  movw %a2l SNAKE_DIRECTION_DOWN
   call SHUFFLE_SNAKE
   movd %arg1 SNAKE_2_BASE_ADDR
   movw %a2l SNAKE_DIRECTION_UP

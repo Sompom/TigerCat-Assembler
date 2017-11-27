@@ -780,11 +780,6 @@ MAIN_GAME_LOOP:
   # and advance all segments following that one. If the head is handled
   # specially, be sure to give the second segment to SHUFFLE_SNAKE
 
-  ## Update head direction
-  movd %ret1 %arg1 #player 1
-  movd %ret2 %arg2 #player 2
-  call UPDATE_SNAKE_HEADS
-
   # Move the snakes
   # TODO: Put the new snake head direction as %a2l for these calls
   movd %arg1 SNAKE_1_BASE_ADDR
@@ -859,24 +854,6 @@ CONTROLLER_READ:
                  # currently broken in hardware)
   loadd %ret1 %arg1
   loadd %ret2 %arg2
-  ret
-
-
-# Update snake heads
-# Take controller outputs, and set the direction of the snake heads
-# appropriately
-# Arguments:
-# None
-# Return:
-# %ret1: Controller 1 value
-# %ret2: Controller 2 value
-UPDATE_SNAKE_HEADS:
-  # Mask off the dpad bits
-  # Up   --> buttons[5]
-  # Down --> buttons[6]
-  # Left --> buttons[7]
-  # Right--> buttons[8]
- 
   ret
 
 

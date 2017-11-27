@@ -91,6 +91,9 @@ SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here
 SNAKE_LENGTH=0x1000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
 
+RESPAWN_START_SCORE=0x64 # Start with two segments worth of points
+TICK_SCORE_INCREASE=0x1  # Gain some points over time
+
 SNAKE_DIRECTION_LEFT=0x2
 SNAKE_DIRECTION_DOWN=0x1
 SNAKE_DIRECTION_RIGHT=0x3
@@ -343,6 +346,10 @@ SPAWN_SNAKE_1:
   addd %arg3 %arg3 $0x1
   stow %a3l %r1l
 
+  # Restart player 1's score
+  movd %arg1 PLAYER_1_SCORE
+  stow %a1l RESPAWN_START_SCORE
+
   ret
 # End SPAWN_SNAKE_1
 
@@ -405,6 +412,10 @@ SPAWN_SNAKE_2:
   movd %arg3 SNAKE_2_BASE_ADDR
   addd %arg3 %arg3 $0x1
   stow %a3l %r1l
+
+  # Restart player 2's score
+  movd %arg1 PLAYER_2_SCORE
+  stow %a1l RESPAWN_START_SCORE
 
   ret
 # End SPAWN_SNAKE_2
@@ -754,6 +765,17 @@ MAIN_GAME_LOOP:
     cmpd %arg1 $0x0
     jmpb GAME_TICK_DELAY # 0x0 <? %arg1
   # end GAME_TICK_DELAY
+
+  # Give the players one point for being alive
+  movd %arg1 PLAYER_1_SCORE
+  loadw %r1l %a1l
+  addw %r1l %r1l TICK_SCORE_INCREASE
+  stow %a1l %r1l
+
+  movd %arg1 PLAYER_2_SCORE
+  loadw %r1l %a1l
+  addw %r1l %r1l TICK_SCORE_INCREASE
+  stow %a1l %r1l
 
   ### Player control
   #   read the controllers

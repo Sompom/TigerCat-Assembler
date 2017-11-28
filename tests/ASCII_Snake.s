@@ -820,7 +820,7 @@ MAIN_GAME_LOOP:
   popw %a2l # Prepare controller 2 direction for call
   call CHECK_COLLISIONS
   # Snek 1
-  movd %arg1 SNAKE_2_BASE_ADDR
+  movd %arg1 SNAKE_1_BASE_ADDR
   popw %a2l # Prepare controller 1 direction for call
   call CHECK_COLLISIONS
 

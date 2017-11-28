@@ -984,7 +984,7 @@ CHECK_COLLISIONS:
   # I should check that the direction for this last piece doesn't matter
 
   COLLISION_EMPTY:
-    subd %SP %SP $0x2 # Fix the stack after pushing %arg1
+    addd %SP %SP $0x2 # Fix the stack after pushing %arg1
     ret
   COLLISION_WALL_OR_SNAKE:
     popd %arg1 # restore the snake head address

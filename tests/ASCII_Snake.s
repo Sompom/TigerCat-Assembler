@@ -818,10 +818,13 @@ MAIN_GAME_LOOP:
   # Snek 2
   movd %arg1 SNAKE_2_BASE_ADDR
   popw %a2l # Prepare controller 2 direction for call
+  pushw %a2l # Save controller 2 for SHUFFLE_SNAKES call
   call CHECK_COLLISIONS
   # Snek 1
   movd %arg1 SNAKE_1_BASE_ADDR
-  popw %a2l # Prepare controller 1 direction for call
+  # Dig through the stack for controller 1's output. It is under controller 2 (single word)
+  addd %arg2 %SP $0x1
+  loadw %a2l %a2l
   call CHECK_COLLISIONS
 
 
@@ -836,10 +839,11 @@ MAIN_GAME_LOOP:
 
   # Move the snakes
   # TODO: Put the new snake head direction as %a2l for these calls
-  movd %arg1 SNAKE_1_BASE_ADDR
-  call SHUFFLE_SNAKE
   movd %arg1 SNAKE_2_BASE_ADDR
-  movw %a2l SNAKE_DIRECTION_UP
+  popw %a2l # Load controller 2's output
+  call SHUFFLE_SNAKE
+  movd %arg1 SNAKE_1_BASE_ADDR
+  popw %a2l # Load controller 1's output
   call SHUFFLE_SNAKE
   
   call UPDATE_GAME_BOARD

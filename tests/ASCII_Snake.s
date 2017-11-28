@@ -925,9 +925,7 @@ CHECK_COLLISIONS:
   # grab the coordinates of the snake head
   loadw %a1l %a1l # Load the next segment
   call SNAKE_SEGMENT_UNPACK
-  # Check whether this section was inactive
-  cmpw %r2h SNAKE_INACTIVE
-  jmpe SHUFFLE_SNAKE_FINISHED
+
   # Decide which direction the snake was going
   cmpw %r2l SNAKE_DIRECTION_LEFT
     jmpe COLLISION_SNAKE_INCREMENT_LEFT
@@ -955,8 +953,6 @@ CHECK_COLLISIONS:
     # Increase the row coordinate by 1
     addw %r1l %r1l $0x1
     jmp  COLLISION_DIRECTION_INCREMENTED
-
-  
 
   # use that coordinate to grab data from the game board
   # todo: set up arguments
@@ -988,6 +984,7 @@ CHECK_COLLISIONS:
   # I should check that the direction for this last piece doesn't matter
 
   COLLISION_EMPTY:
+    subd %SP %SP $0x2 # Fix the stack after pushing %arg1
     ret
   COLLISION_WALL_OR_SNAKE:
     popd %arg1 # restore the snake head address
@@ -1007,7 +1004,7 @@ CHECK_COLLISIONS:
       ret
   COLLISION_FOOD:
     #travel to the tail of the snake
-
+    # TODO: %arg1 is still on the stack
     ret 
 #end CHECK_COLLISIONS
 

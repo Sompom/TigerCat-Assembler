@@ -1,6 +1,6 @@
 #
 # Author      : Team TigerCat
-# Date        : 17 November 2017
+# Date        : 27 November 2017
 # Description : This is a two-player Snake game for the TigerCat architecture
 #
 
@@ -21,13 +21,13 @@ jmp INIT #TODO: MAKE INIT
 # String:
 # Array of 8-bit values, read until the 8-bit value 0x0 is encountered
 # The shortest possible string would be 0x0000, while the one-length string "a"
-# would be 0x6100, and a two-length string "aa" would be, in two consequtive 
+# would be 0x6100, and a two-length string "aa" would be, in two consecutive 
 # memory addresses, 0x6161 0x0000
 
 # Game data 
 
-#Snake data is represented as an array of this data starting at a player-specific address
-#Snake storage data:
+# Snake data is represented as an array of this data starting at a player-specific address
+# Snake storage data:
 # Single-word:
 # {active,  U D L R,  column, row}
 #  [15]  ,  [14:13],  [12:6], [5:0]
@@ -39,18 +39,19 @@ jmp INIT #TODO: MAKE INIT
 
 ### Game board
 
-#Board Column and row locations represented by arbitrary address in cellular ram
+# Board Column and row locations represented by arbitrary address in cellular ram
 
-#enum board_data: { 0 = empty
-#                   1 = food
-#                   2 = blue snake
-#                   3 = orange snake
-#                   4 = wall}
+# enum board_data: { 0 = empty
+#                    1 = food
+#                    2 = blue snake
+#                    3 = orange snake
+#                    4 = wall}
 # 4 bits (even though we only need 3)
 
-# The game board is a 2D array of board_data
+# The game board is a 2D array of board_data (128x60 array of words)
+#  - 1 enum per word (we have sooooo much ram)
 
-# Bits Description:
+# Controller bits Description:
 #        A       --> buttons[0]
 #        B       --> buttons[1]
 #        Z       --> buttons[2]
@@ -124,12 +125,13 @@ WALL_COLOUR=0x6F          # Teal
 
 # All tiles are the same ASCII value, but are individually defined in case we
 # want to do something cleverer later
+# TODO: do something clever
 EMPTY_ASCII_VALUE=0x80
 FOOD_ASCII_VALUE=0x80
 SNAKE_ASCII_VALUE=0x80
 WALL_ASCII_VALUE=0x80
 
-GAME_TICK_VALUE=0x3FFFF #time in between ticks
+GAME_TICK_VALUE=0x3FFFF # time in between ticks
 # TODO: game board base address
 # End constants
 
@@ -492,6 +494,23 @@ CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS:
 # End CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
 
 
+# Convert Coordinates to Game Board Entity 
+# Convert a row and column into en entity in the game board : empty, wall, food, or snake
+# Arguments:
+# %a1l: row
+# %a1h: column
+# Return:
+# %r1l: The entity at the given cooridinates
+CONVERT_COORDINATES_TO_GAME_BOARD_ENTITY:
+  # Pass the coordinates on
+  call CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
+  # Game board address is now in %ret1
+
+  loadw %r1l %r1l #load and replace since we don't need it anymore
+  ret
+# End CONVERT_COORDINATES_TO_GAME_BOARD_ENTITY
+
+
 # Update Game Board
 # Read all the other in-memory structs to make the game board
 # reflect the current state
@@ -753,7 +772,12 @@ COPY_GAME_BOARD_TO_VGA:
     jmpb COPY_GAME_BOARD_TO_VGA_LOOP # arg1 <? arg4
   # End COPY_GAME_BOARD_TO_VGA_LOOP
   ret
-# End COPY_GAME_BOARD_TO_VGA
+# End COPY_GAME_BOARD_TO_VGArds
+  #     Go to the player snake addresses and change the head direction 
+
+  call CONTROLLER_READ
+  # Decode controller 1
+  movd %arg1 %ret1
 
 
 #### Main Game Loop
@@ -783,29 +807,36 @@ MAIN_GAME_LOOP:
   #     return the two players' directions in the two return regs
   #   update head direction
   #     If there's no input, the head direction should not be changed
-  #     Prevent the player from going backwards
-  #     Go to the player snake addresses and change the head direction 
-
-  call CONTROLLER_READ
-  # Decode controller 1
-  movd %arg1 %ret1
+  #     Prevent the player from going backwa
   pushd %ret2 # Save controller 2's data
   call CONVERT_CONTROLLER_TO_DIRECTION
-  popd %arg1 # Restore controller 2's data
+  popd %arg1 # Restore controller 2's data, prepare for call
   pushw %r1l # Save controller 1's decoded output
   call CONVERT_CONTROLLER_TO_DIRECTION
-  popw %a2l # Restore controller 1's decoded output
+  pushw %r1l # Save controller 2's decoded output
+
+  ## stack : (top) [r1l : c2_decoded] [r1l : c1_decoded]
+  # todo: optimize the push then pop above and below this comment
+
+  # Check the next move for collisions
+  # Snek 2
+  movd %arg1 SNAKE_2_BASE_ADDR
+  popw %a2l # Prepare controller 2 direction for call
+  call CHECK_COLLISIONS
+  # Snek 1
+  movd %arg1 SNAKE_2_BASE_ADDR
+  popw %a2l # Prepare controller 1 direction for call
+  call CHECK_COLLISIONS
+
+
+  ## todo/thought-train pit stop: the collision checker should be the one to change the game state
 
   # We now have controller 1's output in %a2l and controller 2's output in %r1l
-  # Note that those 'directions' may be 0xFFFF if the controller didn't have any pressed buttons! This needs to be handled.
+  # Note that those 'directions' may be 0xFFFF if the controller didn't have any pressed 
+  # buttons! This needs to be handled.
   # Note that the SHUFFLE_SNAKE function will take a single snake segment
   # and advance all segments following that one. If the head is handled
   # specially, be sure to give the second segment to SHUFFLE_SNAKE
-
-  ## Update head direction
-  movd %ret1 %arg1 #player 1
-  movd %ret2 %arg2 #player 2
-  call UPDATE_SNAKE_HEADS
 
   # Move the snakes
   # TODO: Put the new snake head direction as %a2l for these calls
@@ -884,23 +915,105 @@ CONTROLLER_READ:
   ret
 
 
-# Update snake heads
-# Take controller outputs, and set the direction of the snake heads
-# appropriately
+# Check Collisions
+# Check the passed snake head's next move against the game board and snakes for
+# collisions. update the game state to reflect those collisions. Possible collisions
+# include: no collision, food, wall, or snake
 # Arguments:
-# None
+# %arg1 - The base address of the snake
+# %a2l  - The chosen direction
 # Return:
-# %ret1: Controller 1 value
-# %ret2: Controller 2 value
-UPDATE_SNAKE_HEADS:
-  # Mask off the dpad bits
-  # Up   --> buttons[5]
-  # Down --> buttons[6]
-  # Left --> buttons[7]
-  # Right--> buttons[8]
- 
-  ret
+# void
+CHECK_COLLISIONS:
+  pushd %arg1 # Save the snake head for later
+  # grab the coordinates of the snake head
+  loadw %a1l %a1l # Load the next segment
+  call SNAKE_SEGMENT_UNPACK
+  # Check whether this section was inactive
+  cmpw %r2h SNAKE_INACTIVE
+  jmpe SHUFFLE_SNAKE_FINISHED
+  # Decide which direction the snake was going
+  cmpw %r2l SNAKE_DIRECTION_LEFT
+    jmpe COLLISION_SNAKE_INCREMENT_LEFT
+  cmpw %r2l SNAKE_DIRECTION_RIGHT
+    jmpe COLLISION_SNAKE_INCREMENT_RIGHT
+  cmpw %r2l SNAKE_DIRECTION_UP
+    jmpe COLLISION_SNAKE_INCREMENT_UP
+  cmpw %r2l SNAKE_DIRECTION_DOWN
+    jmpe COLLISION_SNAKE_INCREMENT_DOWN
 
+  # increment by one in the chosen direction
+  COLLISION_SNAKE_INCREMENT_LEFT:
+    # Decrease the column coordinate by 1
+    subw %r1h %r1h $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+  COLLISION_SNAKE_INCREMENT_RIGHT:
+    # Increase the column coordinate by 1
+    addw %r1h %r1h $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+  COLLISION_SNAKE_INCREMENT_UP:
+    # Decrease the row coordinate by 1
+    subw %r1l %r1l $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+  COLLISION_SNAKE_INCREMENT_DOWN:
+    # Increase the row coordinate by 1
+    addw %r1l %r1l $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+
+  
+
+  # use that coordinate to grab data from the game board
+  # todo: set up arguments
+  COLLISION_DIRECTION_INCREMENTED:
+
+  movw %a1l %r1l
+  movw %a1h %r1h
+  call CONVERT_COORDINATES_TO_GAME_BOARD_ENTITY
+  #entity type at r1l
+
+  # Depending on what's on the game board at that coordinate:
+  # If there's nothing there, do nothing and return
+  cmpw %r1l GAME_BOARD_EMPTY
+  jmpe COLLISION_EMPTY
+
+  # If there's a wall or another snake, kill the snake
+  cmpw %r1l GAME_BOARD_WALL
+  jmpe COLLISION_WALL_OR_SNAKE
+
+  cmpw %r1l GAME_BOARD_PLAYER_1_SNAKE
+  jmpe COLLISION_WALL_OR_SNAKE
+
+  cmpw %r1l GAME_BOARD_PLAYER_2_SNAKE
+  jmpe COLLISION_WALL_OR_SNAKE
+
+  # If there's food, grow the snake by placing a segment at the tail
+  #cmpw %r1l GAME_BOARD_FOOD # Unnecessary comparison, since this is the only thing left
+  jmp COLLISION_FOOD
+  # I should check that the direction for this last piece doesn't matter
+
+  COLLISION_EMPTY:
+    ret
+  COLLISION_WALL_OR_SNAKE:
+    popd %arg1 # restore the snake head address
+    pushd %arg1 # save it for after the call to nullify
+    call NULLIFY_SNAKE
+    # Find out which snake to respawn
+    popd %arg1
+    movd %arg4 SNAKE_2_BASE_ADDR
+    cmpd %arg1 %arg4
+    jmpe RESPAWN_SNAKE_2
+
+    RESPAWN_SNAKE_1:
+      call SPAWN_SNAKE_1
+      ret
+    RESPAWN_SNAKE_2:
+      call SPAWN_SNAKE_2
+      ret
+  COLLISION_FOOD:
+    #travel to the tail of the snake
+
+    ret 
+#end CHECK_COLLISIONS
 
 # Shuffle Snakes
 # Move the passed snake forward one position

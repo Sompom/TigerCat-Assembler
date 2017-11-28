@@ -495,7 +495,7 @@ CONVERT_COORDINATES_TO_GAME_BOARD_ENTITY:
   call CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
   # Game board address is now in %ret1
 
-  loadw %r1l %ret1 #load and replace since we don't need it anymore
+  loadw %r1l %r1l #load and replace since we don't need it anymore
   ret
 # End CONVERT_COORDINATES_TO_GAME_BOARD_ENTITY
 
@@ -903,13 +903,49 @@ CONTROLLER_READ:
 # Return:
 # void
 CHECK_COLLISIONS:
-  # grab the coordinates of the snake head
   pushd %arg1 # Save the snake head for later
+  # grab the coordinates of the snake head
+  loadw %a1l %a1l # Load the next segment
+  call SNAKE_SEGMENT_UNPACK
+  # Check whether this section was inactive
+  cmpw %r2h SNAKE_INACTIVE
+  jmpe SHUFFLE_SNAKE_FINISHED
+  # Decide which direction the snake was going
+  cmpw %r2l SNAKE_DIRECTION_LEFT
+    jmpe COLLISION_SNAKE_INCREMENT_LEFT
+  cmpw %r2l SNAKE_DIRECTION_RIGHT
+    jmpe COLLISION_SNAKE_INCREMENT_RIGHT
+  cmpw %r2l SNAKE_DIRECTION_UP
+    jmpe COLLISION_SNAKE_INCREMENT_UP
+  cmpw %r2l SNAKE_DIRECTION_DOWN
+    jmpe COLLISION_SNAKE_INCREMENT_DOWN
 
   # increment by one in the chosen direction
+  COLLISION_SNAKE_INCREMENT_LEFT:
+    # Decrease the column coordinate by 1
+    subw %r1h %r1h $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+  COLLISION_SNAKE_INCREMENT_RIGHT:
+    # Increase the column coordinate by 1
+    addw %r1h %r1h $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+  COLLISION_SNAKE_INCREMENT_UP:
+    # Decrease the row coordinate by 1
+    subw %r1l %r1l $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+  COLLISION_SNAKE_INCREMENT_DOWN:
+    # Increase the row coordinate by 1
+    addw %r1l %r1l $0x1
+    jmp  COLLISION_DIRECTION_INCREMENTED
+
+  
 
   # use that coordinate to grab data from the game board
   # todo: set up arguments
+  COLLISION_DIRECTION_INCREMENTED:
+
+  movw %a1l %r1l
+  movw %a1h %r1h
   call CONVERT_COORDINATES_TO_GAME_BOARD_ENTITY
   #entity type at r1l
 
@@ -938,10 +974,11 @@ CHECK_COLLISIONS:
   COLLISION_WALL_OR_SNAKE:
     popd %arg1 # restore the snake head address
     pushd %arg1 # save it for after the call to nullify
-    NULLIFY_SNAKE
+    call NULLIFY_SNAKE
     # Find out which snake to respawn
     popd %arg1
-    cmp %arg1 SNAKE_2_BASE_ADDR
+    movd %arg4 SNAKE_2_BASE_ADDR
+    cmpd %arg1 %arg4
     jmpe RESPAWN_SNAKE_2
 
     RESPAWN_SNAKE_1:

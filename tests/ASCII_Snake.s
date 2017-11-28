@@ -773,12 +773,6 @@ COPY_GAME_BOARD_TO_VGA:
   # End COPY_GAME_BOARD_TO_VGA_LOOP
   ret
 # End COPY_GAME_BOARD_TO_VGArds
-  #     Go to the player snake addresses and change the head direction 
-
-  call CONTROLLER_READ
-  # Decode controller 1
-  movd %arg1 %ret1
-
 
 #### Main Game Loop
 MAIN_GAME_LOOP:
@@ -807,7 +801,9 @@ MAIN_GAME_LOOP:
   #     return the two players' directions in the two return regs
   #   update head direction
   #     If there's no input, the head direction should not be changed
-  #     Prevent the player from going backwa
+  #     Prevent the player from going backwards
+  call CONTROLLER_READ
+  movd %arg1 %ret1 # Prepare controller 1's data for call
   pushd %ret2 # Save controller 2's data
   call CONVERT_CONTROLLER_TO_DIRECTION
   popd %arg1 # Restore controller 2's data, prepare for call

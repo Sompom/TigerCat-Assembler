@@ -1,6 +1,6 @@
 #
 # Author      : Team TigerCat
-# Date        : 17 November 2017
+# Date        : 27 November 2017
 # Description : This is a two-player Snake game for the TigerCat architecture
 #
 
@@ -21,13 +21,13 @@ jmp INIT #TODO: MAKE INIT
 # String:
 # Array of 8-bit values, read until the 8-bit value 0x0 is encountered
 # The shortest possible string would be 0x0000, while the one-length string "a"
-# would be 0x6100, and a two-length string "aa" would be, in two consequtive 
+# would be 0x6100, and a two-length string "aa" would be, in two consecutive 
 # memory addresses, 0x6161 0x0000
 
 # Game data 
 
-#Snake data is represented as an array of this data starting at a player-specific address
-#Snake storage data:
+# Snake data is represented as an array of this data starting at a player-specific address
+# Snake storage data:
 # Single-word:
 # {active,  U D L R,  column, row}
 #  [15]  ,  [14:13],  [12:6], [5:0]
@@ -39,18 +39,18 @@ jmp INIT #TODO: MAKE INIT
 
 ### Game board
 
-#Board Column and row locations represented by arbitrary address in cellular ram
+# Board Column and row locations represented by arbitrary address in cellular ram
 
-#enum board_data: { 0 = empty
-#                   1 = food
-#                   2 = blue snake
-#                   3 = orange snake
-#                   4 = wall}
+# enum board_data: { 0 = empty
+#                    1 = food
+#                    2 = blue snake
+#                    3 = orange snake
+#                    4 = wall}
 # 4 bits (even though we only need 3)
 
-# The game board is a 2D array of board_data
+# The game board is a 2D array of board_data (128x60 array of words)
 
-# Bits Description:
+# Controller bits Description:
 #        A       --> buttons[0]
 #        B       --> buttons[1]
 #        Z       --> buttons[2]
@@ -121,12 +121,13 @@ WALL_COLOUR=0x6F          # Teal
 
 # All tiles are the same ASCII value, but are individually defined in case we
 # want to do something cleverer later
+# TODO: do something clever
 EMPTY_ASCII_VALUE=0x80
 FOOD_ASCII_VALUE=0x80
 SNAKE_ASCII_VALUE=0x80
 WALL_ASCII_VALUE=0x80
 
-GAME_TICK_VALUE=0x3FFFF #time in between ticks
+GAME_TICK_VALUE=0x3FFFF # time in between ticks
 # TODO: game board base address
 # End constants
 
@@ -769,13 +770,30 @@ MAIN_GAME_LOOP:
   movd %arg1 %ret1
   pushd %ret2 # Save controller 2's data
   call CONVERT_CONTROLLER_TO_DIRECTION
-  popd %arg1 # Restore controller 2's data
+  popd %arg1 # Restore controller 2's data, prepare for call
   pushw %r1l # Save controller 1's decoded output
   call CONVERT_CONTROLLER_TO_DIRECTION
-  popw %a2l # Restore controller 1's decoded output
+  pushw %r1l # Save controller 2's decoded output
+
+  ## stack : (top) [r1l : c2_decoded] [r1l : c1_decoded]
+  # todo: optimize the push then pop above and below this comment
+
+  # Check the next move for collisions
+  # Snek 2
+  movd %arg1 SNAKE_2_BASE_ADDR
+  popw %a2l # Prepare controller 2 direction for call
+  call CHECK_COLLISIONS
+  # Snek 1
+  movd %arg1 SNAKE_2_BASE_ADDR
+  popw %a2l # Prepare controller 1 direction for call
+  call CHECK_COLLISIONS
+
+
+  ## todo/thought-train pit stop: the collision checker should be the one to change the game state
 
   # We now have controller 1's output in %a2l and controller 2's output in %r1l
-  # Note that those 'directions' may be 0xFFFF if the controller didn't have any pressed buttons! This needs to be handled.
+  # Note that those 'directions' may be 0xFFFF if the controller didn't have any pressed 
+  # buttons! This needs to be handled.
   # Note that the SHUFFLE_SNAKE function will take a single snake segment
   # and advance all segments following that one. If the head is handled
   # specially, be sure to give the second segment to SHUFFLE_SNAKE
@@ -856,6 +874,21 @@ CONTROLLER_READ:
   loadd %ret2 %arg2
   ret
 
+
+# Check Collisions
+# Check the passed snake head's next move against the game board and snakes for
+# collisions. update the game state to reflect those collisions. Possible collisions
+# include: no collision, food, wall, or snake
+# Arguments:
+# %arg1 - The base address of the snake
+# %a2l  - The chosen direction
+# Return:
+# void
+CHECK_COLLISIONS:
+
+
+  ret
+#end CHECK_COLLISIONS
 
 # Shuffle Snakes
 # Move the passed snake forward one position

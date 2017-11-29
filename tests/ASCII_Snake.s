@@ -437,36 +437,52 @@ SPAWN_SNAKE_2:
 GENERATE_FOOD:
   movw %a1l %rand # Randomly generate a row and column
   call SNAKE_SEGMENT_UNPACK
-  # TODO: Actual checking for food row in-bounds-ness
-  # For now, bound the food by truncating it to 5 bits, then adding enough
-  # to make sure it isn't in the top wall
-  andw %r1l %r1l $0x1F
-  addw %r1l %r1l GAME_BOARD_TOP_BORDER
 
   # Ensure we have not rolled off the left border
   cmpw %r1h GAME_BOARD_SIDE_BORDERS
-  jmpbe GENERATE_FOOD_LEFT_COLUMN_OKAY # SIDE_BORDER <? column
+  jmpbe GENERATE_FOOD_LEFT_COLUMN_OKAY # SIDE_BORDER <= column
     # If we are off the left side, move back on
     addw %r1h %r1h GAME_BOARD_SIDE_BORDERS
     jmp GENERATE_FOOD_COLUMN_FINISHED
     GENERATE_FOOD_LEFT_COLUMN_OKAY:
-    # Check if the column is now off the right border
+    # Ensure we have not rolled off the right border
     movw %a1l GAME_BOARD_NUM_COLUMNS # Compare against the total number of columns...
     subw %a1l %a1l GAME_BOARD_SIDE_BORDERS # ...minus the number of walls on the right
     cmpw %a1l %r1h # Check if this food's column is in-bounds on the right
-    jmpb GENERATE_FOOD_COLUMN_FINISHED # r1h <? a1l
+    jmpb GENERATE_FOOD_COLUMN_FINISHED # r1h <? a1l  ex: col < 78
     # Otherwise we were out-of-bounds on the right, push back in-bounds
-    # Since this is a 6-bit number, the max values is 63
-    # 'In Bounds' is the difference between the actual board width (59) and the
+    # Since this is a 7-bit number, the max values is 127
+    # 'In Bounds' is the difference between the actual board width (79) and the
     # maximum value, minus two wall sections
-    # I.e., we need to subtract (2 + (63 - 59)) = 6 to ensure we are in-bounds
-    subw %r1h %r1h $0x6
+    # I.e., we need to subtract (2 + (127 - 79)) = 50 to ensure we are in-bounds
+    subw %r1h %r1h $0x32
   GENERATE_FOOD_COLUMN_FINISHED:
+
+  # Ensure we have not rolled off the top border
+  cmpw %r1l GAME_BOARD_TOP_BORDER
+  jmpbe GENERATE_FOOD_TOP_ROW_OKAY
+    # If we are off the top, move back down
+    addw %r1l %r1l GAME_BOARD_TOP_BORDER
+    jmp GENERATE_FOOD_ROW_FINISHED
+    GENERATE_FOOD_TOP_ROW_OKAY:
+    # Ensure we have not rolled off the bottom border
+    movw %a1l GAME_BOARD_NUM_ROWS # Compare against the total number of rows...
+    subw %a1l %a1l GAME_BOARD_BOTTOM_BORDER # ...minus the number of rows on the bottom
+    cmpw %a1l %r1l # Check if this food's row is in-bounds on the bottom
+    jmpb GENERATE_FOOD_ROW_FINISHED # r1l <? a1l  ex: row < 78
+    # Otherwise we were out-of-bounds on the bottom, push back in-bounds
+    # Since this is a 6-bit number, the max values is 63
+    # 'In Bounds' is the difference between the actual board height (59) and the
+    # maximum value, minus two row sections
+    # I.e., we need to subtract (2 + (63 - 59)) = 6 to ensure we are in-bounds
+    subw %r1l %r1l $0x6
+  GENERATE_FOOD_ROW_FINISHED:
   # Pack the row and column together
   movd %arg1 %ret1
   call SNAKE_SEGMENT_PACK
   # Write to memory
   movd %arg2 FOOD_ADDRESS
+  stow %a2h %r1h
   stow %a2l %r1l
   ret
 # End GENERATE_FOOD

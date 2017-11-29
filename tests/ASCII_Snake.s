@@ -438,6 +438,8 @@ GENERATE_FOOD:
   movw %a1l %rand # Randomly generate a row and column
   call SNAKE_SEGMENT_UNPACK
 
+  # TODO: Ensure the space isn't active
+
   # Ensure we have not rolled off the left border
   cmpw %r1h GAME_BOARD_SIDE_BORDERS
   jmpbe GENERATE_FOOD_LEFT_COLUMN_OKAY # SIDE_BORDER <= column

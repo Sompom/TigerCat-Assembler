@@ -1078,19 +1078,27 @@ SHUFFLE_SNAKE:
     # Restore the last segment's direction
     popw %a3l
     # Save this segment's direction. We will need to pass it to the next call
-    pushw %r2l 
-    # Update this segment's direction
-    movw %r2l %a3l
+    pushw %r2l
 
-    # Pack the segment
-    movd %arg1 %ret1
-    movd %arg2 %ret2
-    call SNAKE_SEGMENT_PACK
-    popw %a2l  # Restore this segment's direction
-    popd %arg1 # Restore this segment's address
-    stow %a1l %r1l # Write this segment
-    addd %arg1 %arg1 $0x1 # Move to the next segment
-    jmp SHUFFLE_SNAKE # Tail recursive call
+    # Update this segment's direction
+    # Check for input = -1, indicating no button was pushed
+    cmpw %a3l $0xFFFF
+    # Just do nothing, everything is in place
+    jmpe SHUFFLE_SNAKES_WRITEBACK_REPACK
+      # Otherwise, update the direction to the new direction
+      movw %r2l %a3l
+      jmp SHUFFLE_SNAKES_WRITEBACK_REPACK
+
+    SHUFFLE_SNAKES_WRITEBACK_REPACK:
+      # Pack the segment
+      movd %arg1 %ret1
+      movd %arg2 %ret2
+      call SNAKE_SEGMENT_PACK
+      popw %a2l  # Restore this segment's direction
+      popd %arg1 # Restore this segment's address
+      stow %a1l %r1l # Write this segment
+      addd %arg1 %arg1 $0x1 # Move to the next segment
+      jmp SHUFFLE_SNAKE # Tail recursive call
 
   SHUFFLE_SNAKE_FINISHED:
     addd %SP %SP $0x3 # Clean up stack from pushing arg1 and %a2l earlier

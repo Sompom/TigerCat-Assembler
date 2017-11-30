@@ -838,13 +838,13 @@ MAIN_GAME_LOOP:
   popw %a2l # Prepare controller 2 direction for call
   pushw %a2l # Save controller 2 for SHUFFLE_SNAKES call
   call CHECK_COLLISIONS
+  pushw %r1l
   # Snek 1
   movd %arg1 SNAKE_1_BASE_ADDR
   # Dig through the stack for controller 1's output. It is under controller 2 (single word)
-  addd %arg2 %SP $0x1
+  addd %arg2 %SP $0x2
   loadw %a2l %a2l
   call CHECK_COLLISIONS
-
 
   ## todo/thought-train pit stop: the collision checker should be the one to change the game state
 
@@ -856,14 +856,16 @@ MAIN_GAME_LOOP:
   # specially, be sure to give the second segment to SHUFFLE_SNAKE
 
   # Move the snakes
-  # TODO: Put the new snake head direction as %a2l for these calls
   movd %arg1 SNAKE_2_BASE_ADDR
+  # Currently have snake 1's food-eat-status in %r1l
+  # Need snake 2's food status in %a2h
+  popw %a2h
   popw %a2l # Load controller 2's output
-  movw %a2h $0x0 # Do not grow the snake TODO: Read input
+  pushw %r1l # Save snake 1's food status
   call SHUFFLE_SNAKE
   movd %arg1 SNAKE_1_BASE_ADDR
+  popw %a2h # Load snake 1's food status
   popw %a2l # Load controller 1's output
-  movw %a2h $0x0 # Do not grow the snake TODO: Read input
   call SHUFFLE_SNAKE
   
   call UPDATE_GAME_BOARD

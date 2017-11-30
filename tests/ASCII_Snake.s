@@ -947,7 +947,7 @@ CONTROLLER_READ:
 # %arg1 - The base address of the snake
 # %a2l  - The chosen direction
 # Return:
-# %r2l  - 0 for no food collision, 1 for food collision.
+# %r1l  - 0 for no food collision, 1 for food collision.
 CHECK_COLLISIONS:
   pushd %arg1 # Save the snake head for later
   # grab the coordinates of the snake head
@@ -1013,6 +1013,7 @@ CHECK_COLLISIONS:
 
   COLLISION_EMPTY:
     addd %SP %SP $0x2 # Fix the stack after pushing %arg1
+    movw %r1l $0x0
     ret
   COLLISION_WALL_OR_SNAKE:
     popd %arg1 # restore the snake head address
@@ -1026,13 +1027,16 @@ CHECK_COLLISIONS:
 
     RESPAWN_SNAKE_1:
       call SPAWN_SNAKE_1
+      movw %r1l $0x0
       ret
     RESPAWN_SNAKE_2:
       call SPAWN_SNAKE_2
+      movw %r1l $0x0
       ret
   COLLISION_FOOD:
-    movw %r2l $0x1
-    subd %SP %SP $0x2 # Fix the stack after pushing %arg1
+    call GENERATE_FOOD
+    movw %r1l $0x1
+    addd %SP %SP $0x2 # Fix the stack after pushing %arg1
     ret 
 #end CHECK_COLLISIONS
 

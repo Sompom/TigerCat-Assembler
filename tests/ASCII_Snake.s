@@ -822,7 +822,10 @@ MAIN_GAME_LOOP:
   # Snek 1
   movd %arg1 SNAKE_1_BASE_ADDR
   popw %a2l # Prepare controller 1 direction for call
+  pushw %r2l # Save snake 2's grow flag
   call CHECK_COLLISIONS
+
+  ## stack : (top) [r2l : snake_2_grow]
 
 
   ## todo/thought-train pit stop: the collision checker should be the one to change the game state
@@ -837,9 +840,11 @@ MAIN_GAME_LOOP:
   # Move the snakes
   # TODO: Put the new snake head direction as %a2l for these calls
   movd %arg1 SNAKE_1_BASE_ADDR
+  movw %r2l %a4l
   call SHUFFLE_SNAKE
   movd %arg1 SNAKE_2_BASE_ADDR
   movw %a2l SNAKE_DIRECTION_UP
+  popw %a4l # pop snake 2's grow flag into a4l in preparation for the call
   call SHUFFLE_SNAKE
   
   call UPDATE_GAME_BOARD
@@ -914,12 +919,14 @@ CONTROLLER_READ:
 # Check Collisions
 # Check the passed snake head's next move against the game board and snakes for
 # collisions. update the game state to reflect those collisions. Possible collisions
-# include: no collision, food, wall, or snake
+# include: no collision, food, wall, or snake. Returns 1 if the collision was due to food.
+# The return argument is destined for use in SHUFFLE_SNAKE as a flag to signal a
+# grow operation.
 # Arguments:
 # %arg1 - The base address of the snake
 # %a2l  - The chosen direction
 # Return:
-# void
+# %r2l  - 0 for no food collision, 1 for food collision.
 CHECK_COLLISIONS:
   pushd %arg1 # Save the snake head for later
   # grab the coordinates of the snake head
@@ -1003,8 +1010,8 @@ CHECK_COLLISIONS:
       call SPAWN_SNAKE_2
       ret
   COLLISION_FOOD:
-    #travel to the tail of the snake
-    # TODO: %arg1 is still on the stack
+    loadw %r2l
+    subd %SP %SP $0x2 # Fix the stack after pushing %arg1
     ret 
 #end CHECK_COLLISIONS
 
@@ -1015,9 +1022,18 @@ CHECK_COLLISIONS:
 # Arguments:
 # %arg1 - The base address of the snake to move
 # %a2l  - The direction of the previous segment
+# %a4l - When called externally, non-zero values will grow the snake. When called internally,
+#         %arg4 contains the copied value of the last segment before shuffling
 # Return:
 # void
 SHUFFLE_SNAKE:
+  cmp %a4l %0 # If the previous segment register is 0, don't copy this segment
+  jmpe SHUFFLE_NO_GROW_COPY
+  # Copy the previous segment
+  loadw %a4l %a1l
+
+  SHUFFLE_NO_GROW_COPY:
+  pushw %a4l  # Save the previous segment to the stack
   pushd %arg1 # Save the current address into the snake
   pushw %a2l  # Save the leading segment's direction
   loadw %a1l %a1l # Load the next segment
@@ -1066,12 +1082,22 @@ SHUFFLE_SNAKE:
     call SNAKE_SEGMENT_PACK
     popw %a2l  # Restore this segment's direction
     popd %arg1 # Restore this segment's address
+    popw %a4l  # Restore the grow flag
     stow %a1l %r1l # Write this segment
     addd %arg1 %arg1 $0x1 # Move to the next segment
     jmp SHUFFLE_SNAKE # Tail recursive call
 
   SHUFFLE_SNAKE_FINISHED:
-    addd %SP %SP $0x3 # Clean up stack from pushing arg1 and %a2l earlier
+    addd %SP %SP $0x1 # throw away %a2l's saved value
+    popd %arg1 # Restore the address
+    popw %a4l # Restore the grow data
+    cmp %a4l $0x0 
+    jmpe NO_GROW_NEEDED
+    # otherwise...
+    # paste the previous segment
+    stow %a1l %a4l
+    # fall through
+    NO_GROW_NEEDED:
     ret
 # End SHUFFLE_SNAKE
 

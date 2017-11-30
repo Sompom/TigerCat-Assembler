@@ -859,9 +859,11 @@ MAIN_GAME_LOOP:
   # TODO: Put the new snake head direction as %a2l for these calls
   movd %arg1 SNAKE_2_BASE_ADDR
   popw %a2l # Load controller 2's output
+  movw %a2h $0x0 # Do not grow the snake TODO: Read input
   call SHUFFLE_SNAKE
   movd %arg1 SNAKE_1_BASE_ADDR
   popw %a2l # Load controller 1's output
+  movw %a2h $0x0 # Do not grow the snake TODO: Read input
   call SHUFFLE_SNAKE
   
   call UPDATE_GAME_BOARD
@@ -1037,16 +1039,32 @@ CHECK_COLLISIONS:
 # Arguments:
 # %arg1 - The base address of the snake to move
 # %a2l  - The direction of the previous segment
+# %a2h  - The entire previous segment, used when growing the snake. If == 0, then don't grow
 # Return:
 # void
 SHUFFLE_SNAKE:
   pushd %arg1 # Save the current address into the snake
   pushw %a2l  # Save the leading segment's direction
   loadw %a1l %a1l # Load the next segment
+  pushw %a1l # Save the segment, in case we are growing and need to pass it along
+  pushw %a2h # Save the growth input
   call SNAKE_SEGMENT_UNPACK
   # Check whether this section was inactive
   cmpw %r2h SNAKE_INACTIVE
   jmpe SHUFFLE_SNAKE_FINISHED
+
+  # See if we are growing, in which case we need to pass the current segment along unmodified
+  # If we are not growing, we just need to pass along $0x0
+  popw %a2h # Load the growth input
+  popw %a1l # Load the unmodified segment
+  cmpw %a2h $0x0
+  jmpe SHUFFLE_SNAKE_NOT_GROWING
+    movw %a2h %a1l
+  SHUFFLE_SNAKE_NOT_GROWING:
+  # Do nothing, $0x0 or the new data is already in %a2h
+  # Do save the value for later
+  pushw %a2h
+  
   # Decide which direction the snake was going
   cmpw %r2l SNAKE_DIRECTION_LEFT
     jmpe SHUFFLE_SNAKE_LEFT
@@ -1075,10 +1093,14 @@ SHUFFLE_SNAKE:
     jmp SHUFFLE_SNAKE_WRITEBACK
 
   SHUFFLE_SNAKE_WRITEBACK:
+    # Restore the growth flag
+    popw %a2h
     # Restore the last segment's direction
     popw %a3l
     # Save this segment's direction. We will need to pass it to the next call
     pushw %r2l
+    # Save the current growth flag
+    pushw %a2h 
 
     # Update this segment's direction
     # Check for input = -1, indicating no button was pushed
@@ -1094,6 +1116,7 @@ SHUFFLE_SNAKE:
       movd %arg1 %ret1
       movd %arg2 %ret2
       call SNAKE_SEGMENT_PACK
+      popw %a2h  # Restore the growth flag
       popw %a2l  # Restore this segment's direction
       popd %arg1 # Restore this segment's address
       stow %a1l %r1l # Write this segment
@@ -1101,7 +1124,15 @@ SHUFFLE_SNAKE:
       jmp SHUFFLE_SNAKE # Tail recursive call
 
   SHUFFLE_SNAKE_FINISHED:
-    addd %SP %SP $0x3 # Clean up stack from pushing arg1 and %a2l earlier
+    popw %a2h # Load the growth input
+    cmpw %a2h $0x0
+    jmpe SHUFFLE_SNAKE_FINISHED_NO_GROW
+      # Otherwise, we need to grow. First step, get the proper address
+      addd %arg1 %SP $0x2 # arg1 is on the bottom of this method's stack...
+      loadd %arg1 %arg1 # Load the address of the snake
+      stow %a1l %a2h # Write the new segment
+    SHUFFLE_SNAKE_FINISHED_NO_GROW:
+    addd %SP %SP $0x4 # Clean up stack from pushing %arg1, %a1l, and %a2l earlier
     ret
 # End SHUFFLE_SNAKE
 

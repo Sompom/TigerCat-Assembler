@@ -938,12 +938,14 @@ CONTROLLER_READ:
 # Check Collisions
 # Check the passed snake head's next move against the game board and snakes for
 # collisions. update the game state to reflect those collisions. Possible collisions
-# include: no collision, food, wall, or snake
+# include: no collision, food, wall, or snake. Returns 1 if the collision was due to food.
+# The return argument is destined for use in SHUFFLE_SNAKE as a flag to signal a
+# grow operation.
 # Arguments:
 # %arg1 - The base address of the snake
 # %a2l  - The chosen direction
 # Return:
-# void
+# %r2l  - 0 for no food collision, 1 for food collision.
 CHECK_COLLISIONS:
   pushd %arg1 # Save the snake head for later
   # grab the coordinates of the snake head
@@ -1027,8 +1029,8 @@ CHECK_COLLISIONS:
       call SPAWN_SNAKE_2
       ret
   COLLISION_FOOD:
-    #travel to the tail of the snake
-    # TODO: %arg1 is still on the stack
+    movw %r2l $0x1
+    subd %SP %SP $0x2 # Fix the stack after pushing %arg1
     ret 
 #end CHECK_COLLISIONS
 

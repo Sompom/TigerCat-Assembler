@@ -74,6 +74,7 @@ jmp INIT #TODO: MAKE INIT
 
 # Define your constants here!
 VGA_TEXT_BASE_ADDR=0x7FE000 # Stuff written starting here will be drawn to the screen
+AUDIO_BASE_ADDR=0x7FDBD8 # Stuff written here will be played to the speaker (audio: 1-5)
 CONTROLLER_1_READ_ADDR=0x7FDBDB # Read from controller 1 here
 CONTROLLER_2_READ_ADDR=0x7FDBDE # Read from controller 2 here
 
@@ -1027,18 +1028,39 @@ CHECK_COLLISIONS:
 
     RESPAWN_SNAKE_1:
       call SPAWN_SNAKE_1
+      movw %a1l $0x1 # store sound to play as argument
+      call PLAY_AUDIO # play audio
       movw %r1l $0x0
       ret
     RESPAWN_SNAKE_2:
       call SPAWN_SNAKE_2
+      movw %a1l $0x2 # store sound to play as argument
+      call PLAY_AUDIO # play audio
       movw %r1l $0x0
       ret
   COLLISION_FOOD:
     call GENERATE_FOOD
     movw %r1l $0x1
+    movw %a1l $0x4 # store sound to play as argument
+    call PLAY_AUDIO # play audio
+    movw %r1l $0x1
     addd %SP %SP $0x2 # Fix the stack after pushing %arg1
     ret 
 #end CHECK_COLLISIONS
+
+
+
+# Plays Audio
+# Plays audio for a minimum of 0.125 seconds
+# Arguments:
+# %a1l  - The sound to play, should be a number from [1-5], higher numbers play higher frequency sounds
+# Return:
+# void
+PLAY_AUDIO:
+      movd %arg2 AUDIO_BASE_ADDR # get the audio base address
+      stow %a2l %a1l             # write argument to be played into the speaker
+      ret
+# End PLAY_AUDIO
 
 # Shuffle Snakes
 # Move the passed snake forward one position

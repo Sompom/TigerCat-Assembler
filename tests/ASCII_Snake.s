@@ -1051,9 +1051,10 @@ CHECK_COLLISIONS:
 
 
 # Plays Audio
-# Plays audio for a minimum of 0.125 seconds
+# Plays audio for a minimum of 0.125 seconds. If a sound between [1 to 5] is supplied
+# a sound will be played if a number other than that is supplied no sound will be played
 # Arguments:
-# %a1l  - The sound to play, should be a number from [1-5], higher numbers play higher frequency sounds
+# %a1l  - The sound to play, a number from [1 to 5], higher numbers play higher frequency sounds
 # Return:
 # void
 PLAY_AUDIO:

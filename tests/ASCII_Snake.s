@@ -93,6 +93,16 @@ SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here
 SNAKE_LENGTH=0x1000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
 
+DOUBLE_BUFFER_BASE_ADDR=0x3F0000 # Buffer over the game board...
+DOUBLE_BUFFER_LENGTH=0x1E00
+# The screen has 128 columns per row
+# The scores want to draw to the second row
+# The first score is, say, 4 characters from the right edge
+VIDEO_BUFFER_SCORE_1_OFFSET=0x84
+# The second score is 4 from the left edge. The visible region is 80 columns,
+# and the score is 5 characters long, so 128 + 80 - 4 - 5
+VIDEO_BUFFER_SCORE_2_OFFSET=0xC7
+
 RESPAWN_START_SCORE=0x64 # Start with two segments worth of points
 TICK_SCORE_INCREASE=0x1  # Gain some points over time
 
@@ -811,14 +821,15 @@ COPY_GAME_BOARD_TO_VGA:
   # %arg2 - Store the next address to write in the VGA
   # %arg3 - Store the end address of the double buffer
   movd %arg1 GAME_BOARD_BASE_ADDR # Load up the base address
-  movd %arg2 GAME_BOARD_BASE_ADDR # Buffer to the same memory region
+  movd %arg2 DOUBLE_BUFFER_BASE_ADDR
   addd %arg3 %arg1 GAME_BOARD_LENGTH # Load up the end address
   call GAME_BOARD_DOUBLE_BUFFER
+  
   
   # Copy the buffer to the actual VGA
   # We assume that the double buffer and the VGA are both even lengths, thus
   # we load and store two words every loop cycle
-  movd %arg1 GAME_BOARD_BASE_ADDR
+  movd %arg1 DOUBLE_BUFFER_BASE_ADDR
   movd %arg2 VGA_TEXT_BASE_ADDR
   addd %arg3 %arg1 GAME_BOARD_LENGTH
   

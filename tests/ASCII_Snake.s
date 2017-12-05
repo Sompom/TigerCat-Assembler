@@ -1028,7 +1028,7 @@ MAIN_GAME_LOOP:
 # Returns -1 (0xFFFF) if none of the directions were pushed
 # Arguments:
 # %arg1 - Controller Bitfield
-# %arg2 - Snake head (used for direction)
+# %arg2 - Snake head address (used for direction)
 # Return:
 # %r1l - Controller's direction input
 CONVERT_CONTROLLER_TO_DIRECTION:
@@ -1051,7 +1051,7 @@ CONVERT_CONTROLLER_TO_DIRECTION:
   ret
 
   CONVERT_CONTROLLER_TO_DIRECTION_UP:
-    movd %arg1 %arg2 # Unpack the snake head
+    loadw %a1l %a2l # Unpack the snake head
     call SNAKE_SEGMENT_UNPACK
     # Prevent the snake from going backwards
     cmpw %r2l SNAKE_DIRECTION_DOWN
@@ -1059,7 +1059,7 @@ CONVERT_CONTROLLER_TO_DIRECTION:
     movw %r1l SNAKE_DIRECTION_UP
     ret
   CONVERT_CONTROLLER_TO_DIRECTION_DOWN:
-    movd %arg1 %arg2 # Unpack the snake head
+    loadw %a1l %a2l # Unpack the snake head
     call SNAKE_SEGMENT_UNPACK
     # Prevent the snake from going backwards
     cmpw %r2l SNAKE_DIRECTION_UP
@@ -1067,7 +1067,7 @@ CONVERT_CONTROLLER_TO_DIRECTION:
     movw %r1l SNAKE_DIRECTION_DOWN
     ret
   CONVERT_CONTROLLER_TO_DIRECTION_LEFT:
-    movd %arg1 %arg2 # Unpack the snake head
+    loadw %a1l %a2l # Unpack the snake head
     call SNAKE_SEGMENT_UNPACK
     # Prevent the snake from going backwards
     cmpw %r2l SNAKE_DIRECTION_RIGHT
@@ -1075,7 +1075,7 @@ CONVERT_CONTROLLER_TO_DIRECTION:
     movw %r1l SNAKE_DIRECTION_LEFT
     ret
   CONVERT_CONTROLLER_TO_DIRECTION_RIGHT:
-    movd %arg1 %arg2 # Unpack the snake head
+    loadw %a1l %a2l # Unpack the snake head
     call SNAKE_SEGMENT_UNPACK
     # Prevent the snake from going backwards
     cmpw %r2l SNAKE_DIRECTION_LEFT
@@ -1083,7 +1083,7 @@ CONVERT_CONTROLLER_TO_DIRECTION:
     movw %r1l SNAKE_DIRECTION_RIGHT
     ret
 
-  CONVERT_CONTROLLER_TO_DIRECTION_IGNORE
+  CONVERT_CONTROLLER_TO_DIRECTION_IGNORE:
     movw %r1l $0xFFFF
     ret
 # End CONVERT_CONTROLLER_TO_DIRECTION

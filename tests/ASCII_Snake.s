@@ -142,6 +142,8 @@ FOOD_ASCII_VALUE=0x80
 SNAKE_ASCII_VALUE=0x80
 WALL_ASCII_VALUE=0x80
 
+ASCII_ZERO=0x30
+
 GAME_TICK_VALUE=0x3FFFF # time in between ticks
 # TODO: game board base address
 # End constants
@@ -731,6 +733,31 @@ GAME_BOARD_ADD_FOOD:
   call CONVERT_COORDINATES_TO_GAME_BOARD_ADDRESS
   stow %r1l GAME_BOARD_FOOD
   ret
+# End GAME_BOARD_ADD_FOOD
+
+
+# Word to ASCII
+# Convert the single-word unsigned integer to printable ASCII
+# Arguments:
+# %a1l - Value to convert
+# Return:
+# %r1l - Null, Digit 5
+# %r1h - Null, Null
+# %r2l - Digit 2, Digit 1
+# %r2h - Digit 4, Digit 3
+WORD_TO_ASCII:
+  movw %r1h $0x0
+  movw %r1l ASCII_ZERO
+
+  movw %r2l ASCII_ZERO
+  slw %r2l %r2l $0x8
+  orw %r2l %r2l ASCII_ZERO
+  # %r2l now contains "00"
+  movw %r2h %r2l
+  # %r2h now contains "00"
+  # TODO: Actually convert the score
+  ret
+# End WORD_TO_ASCII
 
 
 # Game Board Double Buffer
@@ -804,10 +831,60 @@ GAME_BOARD_DOUBLE_BUFFER:
     cmpd %arg3 %arg1
     jmpb DOUBLE_BUFFER_LOOP # arg1 <? arg3
   # End DOUBLE_BUFFER_LOOP
-  # TODO: Add scores
   ret
 # End GAME_BOARD_DOUBLE_BUFFER
 
+
+# Copy Scores to Double Buffer
+# Colourize and put player 1 and player 2's scores into the buffer
+# Arguments:
+# %a1l  - Score to write
+# %a1h  - Colour to write
+# %arg2 - Start address in the buffer
+# Return:
+# void
+COPY_SCORE_TO_DOUBLE_BUFFER:
+  pushd %arg2
+  pushw %a1h
+  call WORD_TO_ASCII
+  popw %a1h
+  popd %arg2
+
+  # Move the colour into the high bits for easy bitmasking
+  slw %a1h %a1h $0x8
+
+  # Write the highest digit
+  orw %s1l %a1h %r1l
+  stow %a2l %s1l
+
+  addd %arg2 %arg2 $0x1
+  # Write the fourth digit
+  andw %s1l %r2h $0xFF00 # Mask out the lower ASCII value
+  surw %s1l %s1l $0x8
+  orw %s1l %a1h %s1l
+  stow %a2l %s1l
+
+  addd %arg2 %arg2 $0x1
+  # Write the third digit
+  andw %s1l %r2h $0x00FF # Mask out the upper ASCII value
+  orw %s1l %a1h %s1l
+  stow %a2l %s1l
+
+  addd %arg2 %arg2 $0x1
+  # Write the second digit
+  andw %s1l %r2l $0xFF00 # Mask out the lower ASCII value
+  surw %s1l %s1l $0x8
+  orw %s1l %a1h %s1l
+  stow %a2l %s1l
+
+  addd %arg2 %arg2 $0x1
+  # Write the first digit
+  andw %s1l %r2l $0x00FF # Mask out the upper ASCII value
+  orw %s1l %a1h %s1l
+  stow %a2l %s1l
+  
+  ret
+# End COPY_SCORE_TO_DOUBLE_BUFFER
 
 # Copy Game Board to VGA
 # Convert the in-memory game board to ASCII and push it to the VGA
@@ -824,8 +901,21 @@ COPY_GAME_BOARD_TO_VGA:
   movd %arg2 DOUBLE_BUFFER_BASE_ADDR
   addd %arg3 %arg1 GAME_BOARD_LENGTH # Load up the end address
   call GAME_BOARD_DOUBLE_BUFFER
-  
-  
+
+  # Stick the scores in the video buffer
+  movd %arg1 PLAYER_1_SCORE
+  loadw %a1l %a1l
+  movw %a1h BLUE_SNAKE_COLOUR
+  movd %arg2 DOUBLE_BUFFER_BASE_ADDR
+  addd %arg2 %arg2 VIDEO_BUFFER_SCORE_1_OFFSET
+  call COPY_SCORE_TO_DOUBLE_BUFFER
+
+  movd %arg1 PLAYER_2_SCORE
+  loadw %a1l %a1l
+  movw %a1h ORANGE_SNAKE_COLOUR
+  movd %arg2 DOUBLE_BUFFER_BASE_ADDR
+  addd %arg2 %arg2 VIDEO_BUFFER_SCORE_2_OFFSET
+  call COPY_SCORE_TO_DOUBLE_BUFFER
   # Copy the buffer to the actual VGA
   # We assume that the double buffer and the VGA are both even lengths, thus
   # we load and store two words every loop cycle

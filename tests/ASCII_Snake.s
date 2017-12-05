@@ -93,8 +93,8 @@ SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here
 SNAKE_LENGTH=0x1000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
 
-DOUBLE_BUFFER_BASE_ADDR=0x3F4000 # Buffer over the game board...
-DOUBLE_BUFFER_LENGTH=0x1FFF
+DOUBLE_BUFFER_BASE_ADDR=0x3F0000 # Buffer over the game board...
+DOUBLE_BUFFER_LENGTH=0x1E00
 # The screen has 128 columns per row
 # The scores want to draw to the second row
 # The first score is, say, 4 characters from the right edge
@@ -966,9 +966,11 @@ MAIN_GAME_LOOP:
   #     Prevent the player from going backwards
   call CONTROLLER_READ
   movd %arg1 %ret1 # Prepare controller 1's data for call
+  movd %arg2 SNAKE_1_BASE_ADDR
   pushd %ret2 # Save controller 2's data
   call CONVERT_CONTROLLER_TO_DIRECTION
   popd %arg1 # Restore controller 2's data, prepare for call
+  movd %arg2 SNAKE_2_BASE_ADDR
   pushw %r1l # Save controller 1's decoded output
   call CONVERT_CONTROLLER_TO_DIRECTION
   pushw %r1l # Save controller 2's decoded output
@@ -1026,6 +1028,7 @@ MAIN_GAME_LOOP:
 # Returns -1 (0xFFFF) if none of the directions were pushed
 # Arguments:
 # %arg1 - Controller Bitfield
+# %arg2 - Snake head (used for direction)
 # Return:
 # %r1l - Controller's direction input
 CONVERT_CONTROLLER_TO_DIRECTION:
@@ -1048,16 +1051,40 @@ CONVERT_CONTROLLER_TO_DIRECTION:
   ret
 
   CONVERT_CONTROLLER_TO_DIRECTION_UP:
+    movd %arg1 %arg2 # Unpack the snake head
+    call SNAKE_SEGMENT_UNPACK
+    # Prevent the snake from going backwards
+    cmpw %r2l SNAKE_DIRECTION_DOWN
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_IGNORE
     movw %r1l SNAKE_DIRECTION_UP
     ret
   CONVERT_CONTROLLER_TO_DIRECTION_DOWN:
+    movd %arg1 %arg2 # Unpack the snake head
+    call SNAKE_SEGMENT_UNPACK
+    # Prevent the snake from going backwards
+    cmpw %r2l SNAKE_DIRECTION_UP
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_IGNORE
     movw %r1l SNAKE_DIRECTION_DOWN
     ret
   CONVERT_CONTROLLER_TO_DIRECTION_LEFT:
+    movd %arg1 %arg2 # Unpack the snake head
+    call SNAKE_SEGMENT_UNPACK
+    # Prevent the snake from going backwards
+    cmpw %r2l SNAKE_DIRECTION_RIGHT
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_IGNORE
     movw %r1l SNAKE_DIRECTION_LEFT
     ret
   CONVERT_CONTROLLER_TO_DIRECTION_RIGHT:
+    movd %arg1 %arg2 # Unpack the snake head
+    call SNAKE_SEGMENT_UNPACK
+    # Prevent the snake from going backwards
+    cmpw %r2l SNAKE_DIRECTION_LEFT
+    jmpe CONVERT_CONTROLLER_TO_DIRECTION_IGNORE
     movw %r1l SNAKE_DIRECTION_RIGHT
+    ret
+
+  CONVERT_CONTROLLER_TO_DIRECTION_IGNORE
+    movw %r1l $0xFFFF
     ret
 # End CONVERT_CONTROLLER_TO_DIRECTION
 

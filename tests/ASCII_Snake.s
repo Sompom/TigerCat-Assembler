@@ -93,8 +93,8 @@ SNAKE_2_BASE_ADDR=0x3F3000 # Player 2 snake starts here
 SNAKE_LENGTH=0x1000 # Both snakes are the same length
 # 0x2000 = 4192 * 2 (max snake length * two words per segment)
 
-DOUBLE_BUFFER_BASE_ADDR=0x3F0000 # Buffer over the game board...
-DOUBLE_BUFFER_LENGTH=0x1E00
+DOUBLE_BUFFER_BASE_ADDR=0x3F4000 # Buffer over the game board...
+DOUBLE_BUFFER_LENGTH=0x1FFF
 # The screen has 128 columns per row
 # The scores want to draw to the second row
 # The first score is, say, 4 characters from the right edge

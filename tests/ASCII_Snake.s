@@ -723,6 +723,82 @@ GAME_BOARD_ADD_FOOD:
   ret
 
 
+# Game Board Double Buffer
+# Convert the in-memory game board into a representation suitable to copy to
+# the VGA directly
+# Additionally, puts the score on the game board
+# This technique is useful to reduce flicker in the VGA
+# The could be upgraded to use double-word memory load and store, which would likely be
+# nearly 2x faster
+# Arguments:
+# %arg1 - Game Board Base Address
+# %arg2 - Double Buffer target address (can be the same as %arg1)
+# %arg3 - Game Board End Address
+# Return:
+# void
+GAME_BOARD_DOUBLE_BUFFER:
+  # Interesting Registers:
+  # %r1l - The final, colourized piece
+  # %r1h - Register used to load the value from the game board
+  # %r2l - Used to hold the colour for colourizing the piece
+  # %arg1 - Store the address we are working on in the game board
+  # %arg2 - Store the next address to write in the buffer
+  # %arg3 - Store the end address of the game board, to know when we are done
+  DOUBLE_BUFFER_LOOP:
+    movw %r1l $0x0 # %r1l will be the colourized piece to draw
+    loadw %r1h %a1l # Load the next board piece
+    cmpw %r1h GAME_BOARD_EMPTY
+    jmpe DOUBLE_BUFFER_PREPARE_EMPTY
+    cmpw %r1h GAME_BOARD_FOOD
+    jmpe DOUBLE_BUFFER_PREPARE_FOOD
+    cmpw %r1h GAME_BOARD_PLAYER_1_SNAKE
+    jmpe DOUBLE_BUFFER_PREPARE_BLUE_SNAKE
+    cmpw %r1h GAME_BOARD_PLAYER_2_SNAKE
+    jmpe DOUBLE_BUFFER_PREPARE_ORANGE_SNAKE
+    cmpw %r1h GAME_BOARD_WALL
+    jmpe DOUBLE_BUFFER_PREPARE_WALL
+
+    DOUBLE_BUFFER_PREPARE_EMPTY:
+      movw %r2l EMPTY_COLOUR
+      movw %r1l EMPTY_ASCII_VALUE
+      jmp DOUBLE_BUFFER_DOIT
+
+    DOUBLE_BUFFER_PREPARE_FOOD:
+      movw %r2l FOOD_COLOUR
+      movw %r1l EMPTY_ASCII_VALUE
+      jmp DOUBLE_BUFFER_DOIT
+
+    DOUBLE_BUFFER_PREPARE_BLUE_SNAKE:
+      movw %r2l BLUE_SNAKE_COLOUR
+      movw %r1l EMPTY_ASCII_VALUE
+      jmp DOUBLE_BUFFER_DOIT
+
+    DOUBLE_BUFFER_PREPARE_ORANGE_SNAKE:
+      movw %r2l ORANGE_SNAKE_COLOUR
+      movw %r1l EMPTY_ASCII_VALUE
+      jmp DOUBLE_BUFFER_DOIT
+
+    DOUBLE_BUFFER_PREPARE_WALL:
+      movw %r2l WALL_COLOUR
+      movw %r1l WALL_ASCII_VALUE
+      jmp DOUBLE_BUFFER_DOIT
+
+    DOUBLE_BUFFER_DOIT:
+      slw %r2l %r2l $0x8 # Shift the colour into position
+      orw %r1l %r1l %r2l
+      # Do the actual copy
+      stow %a2l %r1l
+    # End DOUBLE_BUFFER_DOIT
+    addd %arg1 %arg1 $0x1
+    addd %arg2 %arg2 $0x1
+    cmpd %arg3 %arg1
+    jmpb DOUBLE_BUFFER_LOOP # arg1 <? arg3
+  # End DOUBLE_BUFFER_LOOP
+  # TODO: Add scores
+  ret
+# End GAME_BOARD_DOUBLE_BUFFER
+
+
 # Copy Game Board to VGA
 # Convert the in-memory game board to ASCII and push it to the VGA
 # Arguments:
@@ -731,67 +807,33 @@ GAME_BOARD_ADD_FOOD:
 # void
 COPY_GAME_BOARD_TO_VGA:
   # Interesting Registers:
-  # %r1l - The final, colourized piece
-  # %r1h - Register used to load the value from the game board
-  # %r2l - Used to hold the colour for colourizing the piece
-  # %arg1 - Store the address we are working on in the game board
+  # %arg1 - Store the start address of the double buffer
   # %arg2 - Store the next address to write in the VGA
-  # %arg4 - Store the end address of the game board, to know when we are done
+  # %arg3 - Store the end address of the double buffer
   movd %arg1 GAME_BOARD_BASE_ADDR # Load up the base address
+  movd %arg2 GAME_BOARD_BASE_ADDR # Buffer to the same memory region
+  addd %arg3 %arg1 GAME_BOARD_LENGTH # Load up the end address
+  call GAME_BOARD_DOUBLE_BUFFER
+  
+  # Copy the buffer to the actual VGA
+  # We assume that the double buffer and the VGA are both even lengths, thus
+  # we load and store two words every loop cycle
+  movd %arg1 GAME_BOARD_BASE_ADDR
   movd %arg2 VGA_TEXT_BASE_ADDR
-  addd %arg4 %arg1 GAME_BOARD_LENGTH # Load up the end address
+  addd %arg3 %arg1 GAME_BOARD_LENGTH
+  
   COPY_GAME_BOARD_TO_VGA_LOOP:
-    movw %r1l $0x0 # %r1l will be the colourized piece to draw
-    loadw %r1h %a1l # Load the next board piece
-    cmpw %r1h GAME_BOARD_EMPTY
-    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_EMPTY
-    cmpw %r1h GAME_BOARD_FOOD
-    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_FOOD
-    cmpw %r1h GAME_BOARD_PLAYER_1_SNAKE
-    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_BLUE_SNAKE
-    cmpw %r1h GAME_BOARD_PLAYER_2_SNAKE
-    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_ORANGE_SNAKE
-    cmpw %r1h GAME_BOARD_WALL
-    jmpe COPY_GAME_BOARD_TO_VGA_PREPARE_WALL
-
-    COPY_GAME_BOARD_TO_VGA_PREPARE_EMPTY:
-      movw %r2l EMPTY_COLOUR
-      movw %r1l EMPTY_ASCII_VALUE
-      jmp COPY_GAME_BOARD_TO_VGA_DOIT
-
-    COPY_GAME_BOARD_TO_VGA_PREPARE_FOOD:
-      movw %r2l FOOD_COLOUR
-      movw %r1l EMPTY_ASCII_VALUE
-      jmp COPY_GAME_BOARD_TO_VGA_DOIT
-
-    COPY_GAME_BOARD_TO_VGA_PREPARE_BLUE_SNAKE:
-      movw %r2l BLUE_SNAKE_COLOUR
-      movw %r1l EMPTY_ASCII_VALUE
-      jmp COPY_GAME_BOARD_TO_VGA_DOIT
-
-    COPY_GAME_BOARD_TO_VGA_PREPARE_ORANGE_SNAKE:
-      movw %r2l ORANGE_SNAKE_COLOUR
-      movw %r1l EMPTY_ASCII_VALUE
-      jmp COPY_GAME_BOARD_TO_VGA_DOIT
-
-    COPY_GAME_BOARD_TO_VGA_PREPARE_WALL:
-      movw %r2l WALL_COLOUR
-      movw %r1l WALL_ASCII_VALUE
-      jmp COPY_GAME_BOARD_TO_VGA_DOIT
-
-    COPY_GAME_BOARD_TO_VGA_DOIT:
-      slw %r2l %r2l $0x8 # Shift the colour into position
-      orw %r1l %r1l %r2l
-      # Do the actual copy
-      stow %a2l %r1l
-    # End COPY_GAME_BOARD_TO_VGA_DOIT
-    addd %arg1 %arg1 $0x1
+    loadd %ret1 %arg1
+    stow %a2l %r1l
     addd %arg2 %arg2 $0x1
-    cmpd %arg4 %arg1
-    jmpb COPY_GAME_BOARD_TO_VGA_LOOP # arg1 <? arg4
+    stow %a2l %r1h
+    addd %arg2 %arg2 $0x1
+    addd %arg1 %arg1 $0x2
+    cmpd %arg3 %arg1
+    jmpb COPY_GAME_BOARD_TO_VGA_LOOP # %arg1 <? %arg3
   # End COPY_GAME_BOARD_TO_VGA_LOOP
   ret
-# End COPY_GAME_BOARD_TO_VGArds
+# End COPY_GAME_BOARD_TO_VGA
 
 #### Main Game Loop
 MAIN_GAME_LOOP:

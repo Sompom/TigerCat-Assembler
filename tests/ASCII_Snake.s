@@ -879,21 +879,6 @@ COPY_GAME_BOARD_TO_VGA:
     cmpd %arg3 %arg1
     jmpb DOUBLE_BUFFER_LOOP # arg1 <? arg3
   # End DOUBLE_BUFFER_LOOP
-
-  # Stick the scores in the video buffer
-  movd %arg1 PLAYER_1_SCORE
-  loadw %a1l %a1l
-  movw %a1h BLUE_SNAKE_COLOUR
-  movd %arg2 VGA_TEXT_BASE_ADDR
-  addd %arg2 %arg2 VIDEO_BUFFER_SCORE_1_OFFSET
-  call COPY_SCORE_TO_DOUBLE_BUFFER
-
-  movd %arg1 PLAYER_2_SCORE
-  loadw %a1l %a1l
-  movw %a1h ORANGE_SNAKE_COLOUR
-  movd %arg2 VGA_TEXT_BASE_ADDR
-  addd %arg2 %arg2 VIDEO_BUFFER_SCORE_2_OFFSET
-  call COPY_SCORE_TO_DOUBLE_BUFFER
   ret
 # End COPY_GAME_BOARD_TO_VGA
 
